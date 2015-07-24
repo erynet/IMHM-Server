@@ -3,10 +3,10 @@ from flask_migrate import Migrate, MigrateCommand
 
 from werkzeug.contrib.fixers import ProxyFix
 
-from sadari import Base, create_app, db_session, engine
-from sadari.models import *
-from sadari.utils.async.functions import android_push
-from sadari.utils.functions import sync_address, sync_price
+from imhm import Base, create_app, db_session, engine
+from imhm.models import *
+from imhm.utils.async.functions import android_push
+from imhm.utils.functions import sync_address, sync_price
 
 app = create_app()
 app.wsgi_app = ProxyFix(app.wsgi_app)
