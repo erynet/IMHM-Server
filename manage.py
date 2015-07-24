@@ -19,11 +19,8 @@ server = Server(host="0.0.0.0")
 
 def make_shell_context():
     return dict(app=app, db=db_session,
-                Operator=Operator, Admin=Admin,
-                Notification=Notification, Order=Order,
                 android_push=android_push,
-                uuid="APA91bEcXOTQJUxCP_IJQvVESA8mNSiplVpRMmeuoE0Yf5m1wptRbbp0UmUHlUjwVmL4svzqHQSLSQVC11pKQcPEH5T3Rte5yIS9mJrvKNQ9PrB4Dtf8JHIDuMrnoXjdLDd5VViqaXRB",
-                sync_address=sync_address, sync_price=sync_price)
+                uuid="APA91bEcXOTQJUxCP_IJQvVESA8mNSiplVpRMmeuoE0Yf5m1wptRbbp0UmUHlUjwVmL4svzqHQSLSQVC11pKQcPEH5T3Rte5yIS9mJrvKNQ9PrB4Dtf8JHIDuMrnoXjdLDd5VViqaXRB")
 
 
 manager.add_command("shell", Shell(make_context=make_shell_context))
