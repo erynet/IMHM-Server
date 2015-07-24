@@ -6,7 +6,7 @@ from werkzeug.contrib.fixers import ProxyFix
 from imhm import Base, create_app, db_session, engine
 from imhm.models import *
 from imhm.utils.async.functions import android_push
-from imhm.utils.functions import sync_address, sync_price
+#from imhm.utils.functions import sync_address, sync_price
 
 app = create_app()
 app.wsgi_app = ProxyFix(app.wsgi_app)
@@ -30,23 +30,9 @@ manager.add_command("shell", Shell(make_context=make_shell_context))
 manager.add_command("db", MigrateCommand)
 manager.add_command("runserver", server)
 
-
-# manager.add_command("loadprice", loadprice)
-
-
 @manager.command
 def initdb():
     Base.metadata.create_all(bind=engine)
-
-
-# sync_price()
-# sync_address()
-
-@manager.command
-def loadprice():
-    sync_price()
-    sync_address()
-
 
 if __name__ == "__main__":
     manager.run()
