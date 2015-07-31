@@ -21,7 +21,7 @@ class Sensors(SerializerMixin, Base):
     # 자신이 속한 하드웨어
     hardware_id = Column(Integer, ForeignKey("hardwares.id", onupdate="CASCADE", ondelete="CASCADE"), nullable=False)
     # 랜덤 sha256
-    fingerprint = Column(String(128), unique=True, nullable=False)
+    #fingerprint = Column(String(128), unique=True, nullable=False)
 
     # 하드웨어에 속한 센서들
     # 0 : Core Temperature

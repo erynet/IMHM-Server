@@ -39,4 +39,4 @@ class Hardwares(SerializerMixin, Base):
                         onupdate=functions.now(), nullable=False)
 
     element_id_idx = Index("element_id_idx", element_id)
-    fingerprint_idx = Index("fingerprint_idx", fingerprint)
+    #fingerprint_idx = Index("fingerprint_idx", fingerprint)

@@ -11,9 +11,9 @@ from imhm import Base
 from imhm.serializer import SerializerMixin
 
 
-class SSDSmartWarning(SerializerMixin, Base):
+class SmartSSDWarning(SerializerMixin, Base):
     # ssd 에서 오는 smart 값들의 모음
-    __tablename__ = "ssd_smart_warning"
+    __tablename__ = "smart_ssd_warning"
     __table_args__ = {"mysql_engine": "InnoDB", "mysql_charset": "utf8"}
 
     id = Column(Integer, primary_key=True, autoincrement=True, nullable=False)

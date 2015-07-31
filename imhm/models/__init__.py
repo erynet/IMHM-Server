@@ -6,8 +6,8 @@ from hardwares import Hardwares
 from sensors import Sensors
 from generic_values import GenericValues
 from generic_parameters import GenericParameters
-from hdd_smart_warning import HDDSmartWarning
-from ssd_smart_warning import SSDSmartWarning
+from smart_hdd_warning import HDDSmartWarning
+from smart_ssd_warning import SSDSmartWarning
 from system_warning import SystemWarning
 
 

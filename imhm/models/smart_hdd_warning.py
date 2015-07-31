@@ -11,9 +11,9 @@ from imhm import Base
 from imhm.serializer import SerializerMixin
 
 
-class HDDSmartWarning(SerializerMixin, Base):
-    # 센서에서 오는 정보중 실수값에 해당하는 것
-    __tablename__ = "hdd_smart_warning"
+class SmartHDDWarning(SerializerMixin, Base):
+    # hdd 에서 오는 smart 값들의 모음
+    __tablename__ = "smart_hdd_warning"
     __table_args__ = {"mysql_engine": "InnoDB", "mysql_charset": "utf8"}
 
     id = Column(Integer, primary_key=True, autoincrement=True, nullable=False)
