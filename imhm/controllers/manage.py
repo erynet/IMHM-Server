@@ -41,8 +41,9 @@ def signup():
     results = {}
     #data_keys = json.lo
     #for key in
-    print request.form["MachineName"]
-    print request.form["LocalIPAddress"]
-    print request.form["GlobalIPAddress"]
-    print request.form["GroupFingerprint"]
+    #print request.form["MachineName"]
+    #print request.form["LocalIPAddress"]
+    #print request.form["GlobalIPAddress"]
+    #print request.form["GroupFingerprint"]
+    print request.data
     return jsonify(results), 200
