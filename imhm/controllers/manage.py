@@ -59,7 +59,7 @@ def signup():
             raise abort(400)
     #2. 일단 받아온 그룹이 존재하나 확인한다.
     element_md5 = "%032x" % random.getrandbits(128)
-    group = db.query(Groups).filter_by(identifier=data["GroupFingerprint"])
+    group = db.query(Groups).filter_by(identifier=data["GroupFingerprint"]).first()
     if not group:
         #3. 그룹이 존재하지 않는다면 그룹을 등록한다.
         #   그다음 엘리먼트를 추가한다.
