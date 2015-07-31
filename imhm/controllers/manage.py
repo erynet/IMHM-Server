@@ -50,7 +50,7 @@ def signup():
     results = {}
     #1. 받은 데이터의 키가 모두 존재하나 검사한다.
     data = json.loads(request.data)
-    arguments = ["MachineName", "LocalIpAddress", "GlobalIPAddress",
+    arguments = ["MachineName", "LocalIPAddress", "GlobalIPAddress",
                  "GroupFingerprint", "HardwareList",
                  "CoreComponent_CPU", "CoreComponent_Mainboard", "CoreComponent_GPU"]
     data_keys = data.keys()
