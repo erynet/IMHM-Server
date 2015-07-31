@@ -31,7 +31,7 @@ class Hardwares(SerializerMixin, Base):
     # 4 : HDD
     # 5 : SSD
     # 6 : System
-    type = Column(Integer, nullabled=False)
+    type = Column(Integer, nullable=False)
     hardware_name = Column(String(512), nullable=False)
 
     created_at = Column(DateTime, default=functions.now(), nullable=False)
