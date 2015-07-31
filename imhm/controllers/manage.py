@@ -13,7 +13,7 @@ manage_blueprint = Blueprint(__name__, "manage")
 from sqlalchemy import and_, or_
 
 from imhm import db_session as db, login_required
-from imhm.models import Groups, Elements
+from imhm.models import Groups, Elements, Hardwares, Sensors
 
 
 @manage_blueprint.before_request
@@ -82,34 +82,150 @@ def signup():
             print str(e)
             raise abort(500)
     else:
-        #이미 그룹이 존재한다.
-        e = Elements(group_id=group.id, fingerprint=element_md5,
-                     machine_name=data["MachineName"],
-                     ip_address_local=data["LocalIpAddress"],
-                     ip_address_global=data["GlobalIPAddress"])
-        db.add(e)
-    db.flush()
+        try:
+            with db.begin_nested():
+                #이미 그룹이 존재한다.
+                e = Elements(group_id=group.id, fingerprint=element_md5,
+                             machine_name=data["MachineName"],
+                             ip_address_local=data["LocalIpAddress"],
+                             ip_address_global=data["GlobalIPAddress"])
+                db.add(e)
+        except Exception, e:
+            print str(e)
+            raise abort(500)
+
     #5. 해당 엘리먼트의 하위에 하드웨어들을 등록하면서 랜덤 SHA1 을 등록한다.
     hws = data["HardwareList"]
+    hws_sha1_dict = {}
     for hw_name in hws.keys():
+        rsha1 = hashlib.sha1(str(random.random())).hexdigest()
         if hws[hw_name] == "CPU":
             #CPU 부하
             #CPU 온도
             #CPU 전력사용량
-            pass
+            try:
+                with db.begin_nested():
+                    h = Hardwares(element_id=e.id, fingerprint=rsha1, \
+                                  type=0, hardware_name=hw_name)
+                    db.add(h)
+                    db.flush()
+                    hws_sha1_dict[hw_name] = rsha1
+                    s1 = Sensors(hardware_id=h.id, type=0, \
+                                 sensor_name="Core Load")
+                    db.add(s1)
+                    s2 = Sensors(hardware_id=h.id, type=1, \
+                                 sensor_name="Core Temperature")
+                    db.add(s2)
+                    s3 = Sensors(hardware_id=h.id, type=2, \
+                                 sensor_name="Core Frequency")
+                    db.add(s3)
+                    s4 = Sensors(hardware_id=h.id, type=4, \
+                                 sensor_name="Core PowerConsume")
+                    db.add(s4)
+            except Exception, e:
+                print str(e)
+                raise abort(500)
         elif hws[hw_name] == "Mainboard":
-            pass
+            try:
+                with db.begin_nested():
+                    h = Hardwares(element_id=e.id, fingerprint=rsha1, \
+                                  type=1, hardware_name=hw_name)
+                    db.add(h)
+                    db.flush()
+                    hws_sha1_dict[hw_name] = rsha1
+                    #여기에 추가되는 센서는 ... 없다.
+            except Exception, e:
+                print str(e)
+                raise abort(500)
+
         elif hws[hw_name] == "Nvidia GPU":
-            pass
+            try:
+                with db.begin_nested():
+                    h = Hardwares(element_id=e.id, fingerprint=rsha1, \
+                                  type=2, hardware_name=hw_name)
+                    db.add(h)
+                    db.flush()
+                    hws_sha1_dict[hw_name] = rsha1
+                    s1 = Sensors(hardware_id=h.id, type=0, \
+                                 sensor_name="Core Load")
+                    db.add(s1)
+                    s2 = Sensors(hardware_id=h.id, type=1, \
+                                 sensor_name="Core Temperature")
+                    db.add(s2)
+                    s3 = Sensors(hardware_id=h.id, type=2, \
+                                 sensor_name="Core Frequency")
+                    db.add(s3)
+                    s4 = Sensors(hardware_id=h.id, type=3, \
+                                 sensor_name="Core FanRPM")
+                    db.add(s4)
+            except Exception, e:
+                print str(e)
+                raise abort(500)
         elif hws[hw_name] == "AMD GPU":
-            pass
+            try:
+                with db.begin_nested():
+                    h = Hardwares(element_id=e.id, fingerprint=rsha1, \
+                                  type=3, hardware_name=hw_name)
+                    db.add(h)
+                    db.flush()
+                    hws_sha1_dict[hw_name] = rsha1
+                    s1 = Sensors(hardware_id=h.id, type=0, \
+                                 sensor_name="Core Load")
+                    db.add(s1)
+                    s2 = Sensors(hardware_id=h.id, type=1, \
+                                 sensor_name="Core Temperature")
+                    db.add(s2)
+                    s3 = Sensors(hardware_id=h.id, type=2, \
+                                 sensor_name="Core Frequency")
+                    db.add(s3)
+                    s4 = Sensors(hardware_id=h.id, type=3, \
+                                 sensor_name="Core FanRPM")
+                    db.add(s4)
+            except Exception, e:
+                print str(e)
+                raise abort(500)
         elif hws[hw_name] == "SSD":
-            pass
+            try:
+                with db.begin_nested():
+                    h = Hardwares(element_id=e.id, fingerprint=rsha1, \
+                                  type=5, hardware_name=hw_name)
+                    db.add(h)
+                    db.flush()
+                    hws_sha1_dict[hw_name] = rsha1
+                    #여기에 추가되는 센서는 ... 없다.
+                    #대신 SMART 가 있다.
+            except Exception, e:
+                print str(e)
+                raise abort(500)
         elif hws[hw_name] == "HDD":
-            pass
+            try:
+                with db.begin_nested():
+                    h = Hardwares(element_id=e.id, fingerprint=rsha1, \
+                                  type=4, hardware_name=hw_name)
+                    db.add(h)
+                    db.flush()
+                    hws_sha1_dict[hw_name] = rsha1
+                    #여기에 추가되는 센서는 ... 없다.
+                    #대신 SMART 가 있다.
+            except Exception, e:
+                print str(e)
+                raise abort(500)
+    try:
+        rsha1 = hashlib.sha1(str(random.random())).hexdigest()
+        with db.begin_nested():
+            h = Hardwares(element_id=e.id, fingerprint=rsha1, \
+                          type=6, hardware_name="System")
+            db.add(h)
+            db.flush()
+            hws_sha1_dict["System"] = rsha1
+            s1 = Sensors(hardware_id=h.id, type=5, \
+                         sensor_name="DPC")
+            db.add(s1)
+    except Exception, e:
+        print str(e)
+        raise abort(500)
 
-
-
-
+    results["element_id"] = element_md5
+    results["hardware_sha1"] = hws_sha1_dict
 
     return jsonify(results), 200

@@ -26,8 +26,8 @@ class Hardwares(SerializerMixin, Base):
     # 컴퓨터에 속한 하드웨어들
     # 0 : CPU
     # 1 : Mainboard
-    # 2 : GPU
-    # 3 : FanController
+    # 2 : Nvidia GPU
+    # 3 : AMD GPU
     # 4 : HDD
     # 5 : SSD
     # 6 : System
