@@ -35,6 +35,12 @@ def pre_request_logging():
 
 # 구현완료
 # 그냥 있는대로 다 긁는다.
-#@event_blueprint.route("/event/", methods=["GET"])
+@manage_blueprint.route("/event/", methods=["GET"])
 #@login_required
-
+def signup():
+    results = {}
+    #data_keys = json.lo
+    #for key in
+    machine_name = request.form["MachineName"]
+    print machine_name
+    return jsonify(results), 200
