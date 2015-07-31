@@ -35,7 +35,7 @@ def pre_request_logging():
 
 # 구현완료
 # 그냥 있는대로 다 긁는다.
-@manage_blueprint.route("/signup/", methods=["GET"])
+@manage_blueprint.route("/signup/", methods=["POST"])
 #@login_required
 def signup():
     results = {}
