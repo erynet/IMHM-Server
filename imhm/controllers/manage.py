@@ -74,7 +74,7 @@ def signup():
 
                 e = Elements(group_id=g.id, fingerprint=element_md5,
                              machine_name=data["MachineName"],
-                             ip_address_local=data["LocalIpAddress"],
+                             ip_address_local=data["LocalIPAddress"],
                              ip_address_global=data["GlobalIPAddress"])
                 db.add(e)
 
@@ -87,7 +87,7 @@ def signup():
                 #이미 그룹이 존재한다.
                 e = Elements(group_id=group.id, fingerprint=element_md5,
                              machine_name=data["MachineName"],
-                             ip_address_local=data["LocalIpAddress"],
+                             ip_address_local=data["LocalIPAddress"],
                              ip_address_global=data["GlobalIPAddress"])
                 db.add(e)
         except Exception, e:
