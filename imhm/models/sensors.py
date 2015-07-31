@@ -32,7 +32,7 @@ class Sensors(SerializerMixin, Base):
     # 5 :
     # 6 :
     # 7 :
-    type = Column(Integer, nullabled=False)
+    type = Column(Integer, nullable=False)
 
     sensor_name = Column(String(512), nullable=False)
 
