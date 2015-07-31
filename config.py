@@ -31,14 +31,14 @@ class DevelopmentConfig(Config):
     DEBUG_TB_INTERCEPT_REDIRECTS = False
     SESSION_TYPE = "redis"
     SQLALCHEMY_DATABASE_URI = "mysql+mysqlconnector://" \
-                              "imhm:3F4868C0E88995CBE3D47DC990BE0C16@localhost:33006/imhm"
+                              "root:1423@localhost:33006/imhm"
 
 
 class ProductionConfig(Config):
     DEBUG = False
     SESSION_TYPE = "redis"
     SQLALCHEMY_DATABASE_URI = "mysql+mysqlconnector://" \
-                              "imhm:3F4868C0E88995CBE3D47DC990BE0C16@localhost:33006/imhm"
+                              "root:1423@localhost:33006/imhm"
 
 
 config = {
