@@ -41,4 +41,3 @@ class Sensors(SerializerMixin, Base):
                         onupdate=functions.now(), nullable=False)
 
     hardware_id_idx = Index("harware_id_idx", hardware_id)
-    fingerprint_idx = Index("fingerprint_idx", fingerprint)
