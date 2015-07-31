@@ -15,7 +15,7 @@ from sqlalchemy import and_, or_
 #from sadari.models import Event
 
 
-#@manage_blueprint.before_request
+@manage_blueprint.before_request
 def pre_request_logging():
     import sys
     reload(sys)
@@ -41,6 +41,8 @@ def signup():
     results = {}
     #data_keys = json.lo
     #for key in
-    machine_name = request.form["MachineName"]
-    print machine_name
+    print request.form["MachineName"]
+    print request.form["LocalIPAddress"]
+    print request.form["GlobalIPAddress"]
+    print request.form["GroupFingerprint"]
     return jsonify(results), 200
