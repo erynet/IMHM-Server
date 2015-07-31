@@ -15,7 +15,7 @@ from sqlalchemy import and_, or_
 #from sadari.models import Event
 
 
-@manage_blueprint.before_request
+#@manage_blueprint.before_request
 def pre_request_logging():
     import sys
     reload(sys)
