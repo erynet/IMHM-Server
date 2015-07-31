@@ -83,7 +83,7 @@ def create_app():
     app.config["SESSION_TYPE"] = config[config_name].SESSION_TYPE
     flask_session_obj.init_app(app)
 
-    from imhm.controllers import (base_blueprint, )
+    from imhm.controllers import (base_blueprint, manage_blueprint)
 
     # register blueprints.
     blueprints = [v for k, v in locals().items()
