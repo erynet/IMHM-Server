@@ -49,4 +49,4 @@ def hw_report(fingerprint):
     if not element:
         raise abort(404)
 
-    return jsonify(element.report), 200
+    return element.report, 200
