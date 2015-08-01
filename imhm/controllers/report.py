@@ -35,16 +35,16 @@ def pre_request_logging():
     )
 
 
-@report_blueprint.route("/hwreport/<element_fingerprint:>", methods=["GET"])
+@report_blueprint.route("/hwreport/<fingerprint>/", methods=["GET"])
 # @login_required
-def hw_report(element_fingerprint):
+def hw_report(fingerprint):
     # 1. 받은 데이터의 키가 모두 존재하나 검사한다.
     # 2. ElementFingerprint 와 일치하는 존재가 있나 확인한다.
     # 3. LocalIPAddress, GlobalIPAddress, MachineName,
     #   HardwareReport 업데이트
     # 4. 결과물은 ElementFingerprint 와 GroupFingerprint 이다.
     element = db.query(Elements). \
-        filter_by(fingerprint=element_fingerprint).first()
+        filter_by(fingerprint=fingerprint).first()
 
     if not element:
         raise abort(404)
