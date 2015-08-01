@@ -52,6 +52,6 @@ def hw_report(fingerprint):
 
     response = make_response(element.report)
     response.headers["Content-Disposition"] = "attachment; filename=%s.txt" % \
-        (element.machine_name + "-" + fingerprint,)
+            (element.machine_name + "-" + fingerprint,)
 
     return response, 200
