@@ -36,7 +36,7 @@ def pre_request_logging():
     )
 
 
-@report_blueprint.route("/hwreport/<fingerprint>/", methods=["GET"])
+@report_blueprint.route("/hwreport/<fingerprint>.txt", methods=["GET"])
 # @login_required
 def hw_report(fingerprint):
     # 1. 받은 데이터의 키가 모두 존재하나 검사한다.
