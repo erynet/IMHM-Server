@@ -36,7 +36,7 @@ def pre_request_logging():
 
 @manage_blueprint.route("/signin/", methods=["POST"])
 #@login_required
-def signup():
+def signin():
     #1. 받은 데이터의 키가 모두 존재하나 검사한다.
     #2. ElementFingerprint 와 일치하는 존재가 있나 확인한다.
     #3. LocalIPAddress, GlobalIPAddress, MachineName,
