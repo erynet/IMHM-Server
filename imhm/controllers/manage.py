@@ -227,5 +227,6 @@ def signup():
 
     results["element_id"] = element_md5
     results["hardware_sha1"] = hws_sha1_dict
+    #db.commit()
 
     return jsonify(results), 200
