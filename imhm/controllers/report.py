@@ -50,6 +50,4 @@ def hw_report(fingerprint):
     if not element:
         raise abort(404)
 
-    html_parser = HTMLParser.HTMLParser()
-
-    return html_parser.escape(element.report), 200
+    return element.report, 200
