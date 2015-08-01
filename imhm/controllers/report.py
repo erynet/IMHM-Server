@@ -51,7 +51,6 @@ def hw_report(fingerprint):
         raise abort(404)
 
     response = make_response(element.report)
-    response.headers["Content-Disposition"] = "attachment; %s.txt" % \
-        (element.machine_name + "-" + fingerprint,)
+    response.headers["Content-Disposition"] = "attachment; " + element.machine_name + ".txt"
 
     return response, 200
