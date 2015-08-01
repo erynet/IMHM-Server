@@ -26,7 +26,7 @@ class Groups(SerializerMixin, Base):
     mainboard = Column(String(256), nullable=False)
     gpu = Column(String(256), nullable=False)
 
-    count = Column(Integer, default=1, nullable=False)
+    #count = Column(Integer, default=1, nullable=False)
 
     comment = Column(BLOB, nullable=True)
 

@@ -121,7 +121,8 @@ def signup():
     else:
         try:
             with db.begin_nested():
-                #이미 그룹이 존재한다.
+                # 이미 그룹이 존재한다.
+                # 그렇다면 가입자 수를 올린다.
                 e = Elements(group_id=group.id, fingerprint=element_md5,
                              machine_name=data["MachineName"],
                              ip_address_local=data["LocalIPAddress"],
