@@ -6,6 +6,7 @@ import time
 import datetime
 import hashlib
 import base64
+import HTMLParser
 
 from flask import abort, Blueprint, request, jsonify, session
 
@@ -49,4 +50,6 @@ def hw_report(fingerprint):
     if not element:
         raise abort(404)
 
-    return element.report, 200
+    html_parser = HTMLParser.HTMLParser()
+
+    return html_parser.escape(element.report), 200
