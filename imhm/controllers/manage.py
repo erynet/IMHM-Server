@@ -5,6 +5,7 @@ import random
 import time
 import datetime
 import hashlib
+import base64
 
 from flask import abort, Blueprint, request, jsonify, session
 
@@ -33,9 +34,45 @@ def pre_request_logging():
         ", ".join([": ".join(x) for x in request.headers])])
     )
 
+@manage_blueprint.route("/signin/", methods=["POST"])
+#@login_required
+def signup():
+    #1. 받은 데이터의 키가 모두 존재하나 검사한다.
+    #2. ElementFingerprint 와 일치하는 존재가 있나 확인한다.
+    #3. LocalIPAddress, GlobalIPAddress, MachineName,
+    #   HardwareReport 업데이트
+    #4. 결과물은 ElementFingerprint 와 GroupFingerprint 이다.
+    results = {}
+    data = json.loads(request.data)
+    arguments = ["ElementFingerprint", "MachineName",
+                 "LocalIPAddress", "GlobalIPAddress", "HardwareReport"]
+    data_keys = data.keys()
+    for argument in arguments:
+        if argument not in data_keys:
+            raise abort(400)
 
-# 구현완료
-# 그냥 있는대로 다 긁는다.
+    element = db.query(Elements).\
+        filter_by(fingerprint=data["ElementFingerprint"]).first()
+    if not element:
+        raise abort(404)
+
+    try:
+        with db.begin_nested():
+            db.query(Elements).filter_by(id=element.id).\
+                update({Elements.machine_name:data["MachineName"],
+                        Elements.ip_address_local:data["LocalIPAddress"],
+                        Elements.ip_address_global:data["GlobalIPAddress"],
+                        Elements.report:base64.b64decode(data["HardwareReport"])})
+    except Exception, e:
+        print str(e)
+        raise abort(500)
+
+    results["element_id"] = element.fingerprint
+
+    db.commit()
+    return jsonify(results), 200
+
+
 @manage_blueprint.route("/signup/", methods=["POST"])
 #@login_required
 def signup():
@@ -227,6 +264,6 @@ def signup():
 
     results["element_id"] = element_md5
     results["hardware_sha1"] = hws_sha1_dict
-    #db.commit()
+    db.commit()
 
     return jsonify(results), 200
