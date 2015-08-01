@@ -8,7 +8,7 @@ import hashlib
 import base64
 import HTMLParser
 
-from flask import abort, Blueprint, request, jsonify, session
+from flask import abort, Blueprint, request, jsonify, session, make_response
 
 report_blueprint = Blueprint(__name__, "report")
 
@@ -36,7 +36,7 @@ def pre_request_logging():
     )
 
 
-@report_blueprint.route("/hwreport/<fingerprint>.txt", methods=["GET"])
+@report_blueprint.route("/hwreport/<fingerprint>", methods=["GET"])
 # @login_required
 def hw_report(fingerprint):
     # 1. 받은 데이터의 키가 모두 존재하나 검사한다.
@@ -50,4 +50,8 @@ def hw_report(fingerprint):
     if not element:
         raise abort(404)
 
-    return element.report, 200
+    response = make_response(element.report)
+    response.headers["Content-Disposition"] = "attachment; %s.txt" % \
+        (element.machine_name + "-" + fingerprint,)
+
+    return response, 200
