@@ -1,12 +1,14 @@
 # -*- coding:utf-8 -*-
-from flask import Blueprint, current_app
+from flask import Blueprint, current_app, jsonify
 
 base_blueprint = Blueprint(__name__, 'terms')
 
 
 @base_blueprint.route("/hello/", methods=["GET"])
 def hello():
-    return "hello", 200
+    results = {}
+    results["reply"] = "Hello, World!"
+    return jsonify(results), 200
 
 
 @base_blueprint.route('/ktclub/', methods=['GET'])
