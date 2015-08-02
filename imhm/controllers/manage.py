@@ -45,7 +45,8 @@ def signin():
     results = {}
     data = json.loads(request.data)
     arguments = ["ElementFingerprint", "MachineName",
-                 "LocalIPAddress", "GlobalIPAddress", "HardwareReport"]
+                 "LocalIPAddress", "GlobalIPAddress", "GatewayIPAddress",
+                 "HardwareReport"]
     data_keys = data.keys()
     for argument in arguments:
         if argument not in data_keys:
@@ -62,6 +63,7 @@ def signin():
                 update({Elements.machine_name:data["MachineName"],
                         Elements.ip_address_local:data["LocalIPAddress"],
                         Elements.ip_address_global:data["GlobalIPAddress"],
+                        Elements.ip_address_gateway:data["GatewayIPAddress"],
                         Elements.report:base64.b64decode(data["HardwareReport"])})
     except Exception, e:
         print str(e)
@@ -87,7 +89,7 @@ def signup():
     results = {}
     #1. 받은 데이터의 키가 모두 존재하나 검사한다.
     data = json.loads(request.data)
-    arguments = ["MachineName", "LocalIPAddress", "GlobalIPAddress",
+    arguments = ["MachineName", "LocalIPAddress", "GlobalIPAddress", "GatewayIPAddress",
                  "GroupFingerprint", "HardwareList",
                  "CoreComponent_CPU", "CoreComponent_Mainboard", "CoreComponent_GPU"]
     data_keys = data.keys()
@@ -112,7 +114,8 @@ def signup():
                 e = Elements(group_id=g.id, fingerprint=element_md5,
                              machine_name=data["MachineName"],
                              ip_address_local=data["LocalIPAddress"],
-                             ip_address_global=data["GlobalIPAddress"])
+                             ip_address_global=data["GlobalIPAddress"],
+                             ip_address_gateway=data["GatewayIPAddress"])
                 db.add(e)
 
         except Exception, e:
@@ -125,7 +128,8 @@ def signup():
                 e = Elements(group_id=group.id, fingerprint=element_md5,
                              machine_name=data["MachineName"],
                              ip_address_local=data["LocalIPAddress"],
-                             ip_address_global=data["GlobalIPAddress"])
+                             ip_address_global=data["GlobalIPAddress"],
+                             ip_address_gateway=data["GatewayIPAddress"])
                 db.add(e)
         except Exception, e:
             print str(e)

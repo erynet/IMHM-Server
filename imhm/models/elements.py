@@ -26,6 +26,7 @@ class Elements(SerializerMixin, Base):
     machine_name = Column(String(256),  nullable=False)
     ip_address_local = Column(String(64), nullable=False)
     ip_address_global = Column(String(64), nullable=False)
+    ip_address_gateway = Column(String(64), nullable=False)
     #os = Column(String(512), nullable=False)
 
     # 컴퓨터가 커져서 로그인 할 시에 GetReport 로 만들어서 기록한다.
