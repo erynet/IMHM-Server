@@ -44,16 +44,14 @@ def process(fingerprint):
     #   HardwareReport 업데이트
     # 4. 결과물은 ElementFingerprint 와 GroupFingerprint 이다.
     results = {}
-    #element = db.query(Elements). \
-    #    filter_by(fingerprint=fingerprint).first()
+    data = json.loads(request.data)
+    arguments = ["General"]
+    data_keys = data.keys()
+    for argument in arguments:
+        if argument not in data_keys:
+            raise abort(400)
 
-    #if not element:
-    #    raise abort(404)
+    print data
 
-    #print "DEBUG"
 
-    #response = make_response(element.report)
-    #response.headers["Content-Disposition"] = "attachment; filename=%s.txt" % \
-    #        (element.machine_name + "-" + fingerprint,)
-
-    return response, 200
+    return "", 200
