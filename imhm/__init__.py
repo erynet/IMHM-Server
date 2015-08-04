@@ -84,7 +84,7 @@ def create_app():
     flask_session_obj.init_app(app)
 
     from imhm.controllers import (base_blueprint, manage_blueprint,
-                                  report_blueprint)
+                                  report_blueprint, process_blueprint)
 
     # register blueprints.
     blueprints = [v for k, v in locals().items()

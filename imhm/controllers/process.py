@@ -6,11 +6,10 @@ import time
 import datetime
 import hashlib
 import base64
-import HTMLParser
 
-from flask import abort, Blueprint, request, jsonify, session, make_response
+from flask import abort, Blueprint, request, jsonify, session
 
-report_blueprint = Blueprint(__name__, "report")
+process_blueprint = Blueprint(__name__, "process")
 
 from sqlalchemy import and_, or_
 
@@ -18,7 +17,7 @@ from imhm import db_session as db, login_required
 from imhm.models import Groups, Elements, Hardwares, Sensors
 
 
-@report_blueprint.before_request
+@process_blueprint.before_request
 def pre_request_logging():
     import sys
     reload(sys)
@@ -36,34 +35,25 @@ def pre_request_logging():
     )
 
 
-@report_blueprint.route("/hwreport/<fingerprint>/", methods=["GET"])
+@process_blueprint.route("/process/", methods=["POST"])
 # @login_required
-def hw_report(fingerprint):
+def process(fingerprint):
     # 1. 받은 데이터의 키가 모두 존재하나 검사한다.
     # 2. ElementFingerprint 와 일치하는 존재가 있나 확인한다.
     # 3. LocalIPAddress, GlobalIPAddress, MachineName,
     #   HardwareReport 업데이트
     # 4. 결과물은 ElementFingerprint 와 GroupFingerprint 이다.
-
     results = {}
-    data = json.loads(request.data)
-    arguments = ["General"]
-    data_keys = data.keys()
-    for argument in arguments:
-        if argument not in data_keys:
-            raise abort(400)
-
-
     #element = db.query(Elements). \
     #    filter_by(fingerprint=fingerprint).first()
 
     #if not element:
     #    raise abort(404)
 
-    print data
+    #print "DEBUG"
 
     #response = make_response(element.report)
     #response.headers["Content-Disposition"] = "attachment; filename=%s.txt" % \
     #        (element.machine_name + "-" + fingerprint,)
 
-    return "", 200
+    return response, 200
