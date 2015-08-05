@@ -97,31 +97,35 @@ def process():
                     s1 = GenericValues(sensor_id=snsr.id, rss_id =rss.id, min=d[0], max=d[1], avg=d[2], dev=d[3])
                     db.add(s1)
 
-                    d = data[fp]["Temp"]
-                    snsr = db.query(Sensors).filter_by(hardware_id=hw.id, type=1).first()
-                    s2 = GenericValues(sensor_id=snsr.id, rss_id =rss.id, min=d[0], max=d[1], avg=d[2], dev=d[3])
-                    db.add(s2)
+                    if data[fp].has_key("Temp"):
+                        d = data[fp]["Temp"]
+                        snsr = db.query(Sensors).filter_by(hardware_id=hw.id, type=1).first()
+                        s2 = GenericValues(sensor_id=snsr.id, rss_id =rss.id, min=d[0], max=d[1], avg=d[2], dev=d[3])
+                        db.add(s2)
 
-                    d = data[fp]["Power"]
-                    snsr = db.query(Sensors).filter_by(hardware_id=hw.id, type=2).first()
-                    s3 = GenericValues(sensor_id=snsr.id, rss_id =rss.id, min=d[0], max=d[1], avg=d[2], dev=d[3])
-                    db.add(s3)
+                    if data[fp].has_key("Power"):
+                        d = data[fp]["Power"]
+                        snsr = db.query(Sensors).filter_by(hardware_id=hw.id, type=2).first()
+                        s3 = GenericValues(sensor_id=snsr.id, rss_id =rss.id, min=d[0], max=d[1], avg=d[2], dev=d[3])
+                        db.add(s3)
 
-                    d = data[fp]["TempPerLoad"]
-                    snsr = db.query(Sensors).filter_by(hardware_id=hw.id, type=4).first()
-                    for l in d:
-                        s = GenericRegression(sensor_id=snsr.id, rss_id =rss.id, criterion=l["Key"],
-                                              min=l["Value"][0], max=l["Value"][1],
-                                              avg=l["Value"][2], dev=l["Value"][3])
-                        db.add(s)
+                    if data[fp].has_key("TempPerLoad"):
+                        d = data[fp]["TempPerLoad"]
+                        snsr = db.query(Sensors).filter_by(hardware_id=hw.id, type=4).first()
+                        for l in d:
+                            s = GenericRegression(sensor_id=snsr.id, rss_id =rss.id, criterion=l["Key"],
+                                                  min=l["Value"][0], max=l["Value"][1],
+                                                  avg=l["Value"][2], dev=l["Value"][3])
+                            db.add(s)
 
-                    d = data[fp]["PowerPerLoad"]
-                    snsr = db.query(Sensors).filter_by(hardware_id=hw.id, type=5).first()
-                    for l in d:
-                        s = GenericRegression(sensor_id=snsr.id, rss_id =rss.id, criterion=l["Key"],
-                                              min=l["Value"][0], max=l["Value"][1],
-                                              avg=l["Value"][2], dev=l["Value"][3])
-                        db.add(s)
+                    if data[fp].has_key("PowerPerLoad"):
+                        d = data[fp]["PowerPerLoad"]
+                        snsr = db.query(Sensors).filter_by(hardware_id=hw.id, type=5).first()
+                        for l in d:
+                            s = GenericRegression(sensor_id=snsr.id, rss_id =rss.id, criterion=l["Key"],
+                                                  min=l["Value"][0], max=l["Value"][1],
+                                                  avg=l["Value"][2], dev=l["Value"][3])
+                            db.add(s)
             except Exception, e:
                 print str(e)
                 raise abort(500)
