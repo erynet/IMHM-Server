@@ -240,6 +240,9 @@ def signup():
                     h = Hardwares(element_id=e.id, fingerprint=rsha1, \
                                   type=5, hardware_name=hw_name)
                     db.add(h)
+                    s = Sensors(hardware_id=h.id, type=9, \
+                                 sensor_name="SSD/HHD Smart")
+                    db.add(s)
                     db.flush()
                     hws_sha1_dict[hw_name] = rsha1
                     #여기에 추가되는 센서는 ... 없다.
@@ -253,6 +256,9 @@ def signup():
                     h = Hardwares(element_id=e.id, fingerprint=rsha1, \
                                   type=4, hardware_name=hw_name)
                     db.add(h)
+                    s = Sensors(hardware_id=h.id, type=9, \
+                                 sensor_name="SSD/HHD Smart")
+                    db.add(s)
                     db.flush()
                     hws_sha1_dict[hw_name] = rsha1
                     #여기에 추가되는 센서는 ... 없다.
