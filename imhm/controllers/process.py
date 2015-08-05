@@ -59,7 +59,7 @@ def process():
     if not element:
         raise abort(404)
 
-    hws = db.query(Hardwares).filter_by(element_id=ef).all()
+    hws = db.query(Hardwares).filter_by(element_id=element.id).all()
     if not hws:
         raise abort(404)
 
@@ -77,7 +77,7 @@ def process():
     # 4. 세션을 하나 딴다.
     try:
         with db.begin_nested():
-            rss = ReportSession(element_id=ef)
+            rss = ReportSession(element_id=element.id)
             db.add(rss)
             db.flush()
     except Exception, e:
