@@ -235,6 +235,21 @@ def process():
                 raise abort(500)
         elif hw_dict[fp]["type"] == 6:
             #System
-            pass
+            try:
+                with db.begin_nested():
+                    hw = db.query(Hardwares).filter_by(fingerprint=fp).first()
+                    snsr = db.query(Sensors).filter_by(hardware_id=hw.id, type=7).first()
+                    d = data[fp]
+
+                    s = GenericParameters(sensor_id=snsr.id, rss_id =rss.id,
+                                          value=d["DPC"]["Stat"][1], additional=d["DPC"]["Driver"])
+                    db.add(s)
+
+                    for l in d["Throttling"]:
+                        s = GenericParameters(sensor_id=snsr.id, rss_id =rss.id, value=l)
+                        db.add(s)
+            except Exception, e:
+                print str(e)
+                raise abort(500)
     db.commit()
-    return "", 200
+    return jsonify(results), 200

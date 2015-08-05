@@ -277,9 +277,9 @@ def signup():
             s1 = Sensors(hardware_id=h.id, type=7, \
                          sensor_name="DPC")
             db.add(s1)
-            s1 = Sensors(hardware_id=h.id, type=8, \
+            s2 = Sensors(hardware_id=h.id, type=8, \
                          sensor_name="Throttling")
-            db.add(s1)
+            db.add(s2)
     except Exception, e:
         print str(e)
         raise abort(500)
