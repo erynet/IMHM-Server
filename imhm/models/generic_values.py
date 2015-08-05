@@ -20,8 +20,14 @@ class GenericValues(SerializerMixin, Base):
 
     # 자신이 속한 센서
     sensor_id = Column(Integer, ForeignKey("sensors.id", onupdate="CASCADE", ondelete="CASCADE"), nullable=False)
-    value = Column(Float, nullable=False)
+    rss_id = Column(Integer, ForeignKey("report_session.id", onupdate="CASCADE", ondelete="CASCADE"), nullable=False)
+
+    min = Column(Float, nullable=False)
+    max = Column(Float, nullable=False)
+    avg = Column(Float, nullable=False)
+    dev = Column(Float, nullable=False)
 
     timestamp = Column(DateTime, default=functions.now(), nullable=False)
 
-    sensor_id_idx = Index("sensor_id_idx", sensor_id)
+    sensor_id_rss_id_idx = Index("sensor_id_rss_id_idx", sensor_id, rss_id)
+    rss_id_sensor_id_idx = Index("rss_id_sensor_id_idx", rss_id, sensor_id)

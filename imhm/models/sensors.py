@@ -26,10 +26,15 @@ class Sensors(SerializerMixin, Base):
     # 하드웨어에 속한 센서들
     # 0 : Core Load         /   value
     # 1 : Core Temperature  /   value
-    # 2 : Core Frequency    /   value
+    # 2 : Core Power        /   value
     # 3 : Core FanRPM       /   value
-    # 4 : Core PowerConsume /   value
-    # 5 : System DPC        /   parameter
+    # 4 : Core TempPerLoad  /   regression
+    # 5 : Core PowerPerLoad /   regression
+    # 6 : Core FanRPMPerLoad/   regression
+    # 7 : System DPC        /   parameter
+    # 8 : System Throttling /   parameter
+    # 9 : SSD/HHD Smart     /   Smart
+
     # 6 : SMART,5,Reallocated Sector    /   parameter
     # 7 : SMART,9,Power-On Hours        /   parameter
     # 8 : SMART,187,Reported Uncorrectable Errors   /   parameter

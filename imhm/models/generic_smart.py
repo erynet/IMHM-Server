@@ -11,9 +11,9 @@ from imhm import Base
 from imhm.serializer import SerializerMixin
 
 
-class GenericParameters(SerializerMixin, Base):
+class GenericSmart(SerializerMixin, Base):
     # 센서에서 오는 정보중 정수값에 해당하는 것
-    __tablename__ = "generic_parameters"
+    __tablename__ = "generic_smart"
     __table_args__ = {"mysql_engine": "InnoDB", "mysql_charset": "utf8"}
 
     id = Column(Integer, primary_key=True, autoincrement=True, nullable=False)
@@ -22,8 +22,10 @@ class GenericParameters(SerializerMixin, Base):
     sensor_id = Column(Integer, ForeignKey("sensors.id", onupdate="CASCADE", ondelete="CASCADE"), nullable=False)
     rss_id = Column(Integer, ForeignKey("report_session.id", onupdate="CASCADE", ondelete="CASCADE"), nullable=False)
 
-    value = Column(Integer, nullable=False)
-    additional = Column(String(512), nullable=True)
+    code = Column(Integer, nullable=False)
+    description = Column(String(64), nullable=True)
+    threshold = Column(Integer, nullable=False)
+    physical = Column(Integer, nullable=False)
 
     timestamp = Column(DateTime, default=functions.now(), nullable=False)
 

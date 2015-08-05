@@ -50,7 +50,8 @@ def hw_report(fingerprint):
     if not element:
         raise abort(404)
 
-    print "DEBUG"
+    # print "DEBUG"
+    # base64 디코드 필수임
 
     response = make_response(element.report)
     response.headers["Content-Disposition"] = "attachment; filename=%s.txt" % \

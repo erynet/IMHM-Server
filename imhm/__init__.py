@@ -63,11 +63,10 @@ Base.query = db_session.query_property()
 def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        session_token = session.get("token")
+        session_token = session.get("t")
         if session_token is None:
             # raise abort(401)
-            return jsonify({"reason_text": "Require Login", \
-                            "reason_code": 0}), 401
+            return "", 401
         escape(session)
 
         return f(*args, **kwargs)

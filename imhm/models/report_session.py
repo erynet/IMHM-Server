@@ -23,7 +23,7 @@ class ReportSession(SerializerMixin, Base):
                         ForeignKey("elements.id", onupdate="CASCADE", ondelete="CASCADE"),
                         nullable=False)
 
-    notify_level = Column(Integer, default=0, nullable=False)
+    #notify_level = Column(Integer, default=0, nullable=False)
 
     created_at = Column(DateTime, default=functions.now(), nullable=False)
 

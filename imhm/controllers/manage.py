@@ -64,7 +64,7 @@ def signin():
                         Elements.ip_address_local:data["LocalIPAddress"],
                         Elements.ip_address_global:data["GlobalIPAddress"],
                         Elements.ip_address_gateway:data["GatewayIPAddress"],
-                        Elements.report:base64.b64decode(data["HardwareReport"])})
+                        Elements.report:data["HardwareReport"]})
     except Exception, e:
         print str(e)
         raise abort(500)
@@ -158,11 +158,14 @@ def signup():
                                  sensor_name="Core Temperature")
                     db.add(s2)
                     s3 = Sensors(hardware_id=h.id, type=2, \
-                                 sensor_name="Core Frequency")
+                                 sensor_name="Core Power")
                     db.add(s3)
                     s4 = Sensors(hardware_id=h.id, type=4, \
-                                 sensor_name="Core PowerConsume")
+                                 sensor_name="Core TempPerLoad")
                     db.add(s4)
+                    s5 = Sensors(hardware_id=h.id, type=5, \
+                                 sensor_name="Core PowerPerLoad")
+                    db.add(s5)
             except Exception, e:
                 print str(e)
                 raise abort(500)
@@ -193,12 +196,15 @@ def signup():
                     s2 = Sensors(hardware_id=h.id, type=1, \
                                  sensor_name="Core Temperature")
                     db.add(s2)
-                    s3 = Sensors(hardware_id=h.id, type=2, \
-                                 sensor_name="Core Frequency")
-                    db.add(s3)
-                    s4 = Sensors(hardware_id=h.id, type=3, \
+                    s3 = Sensors(hardware_id=h.id, type=3, \
                                  sensor_name="Core FanRPM")
+                    db.add(s3)
+                    s4 = Sensors(hardware_id=h.id, type=4, \
+                                 sensor_name="Core TempPerLoad")
                     db.add(s4)
+                    s5 = Sensors(hardware_id=h.id, type=6, \
+                                 sensor_name="Core FanRPMPerLoad")
+                    db.add(s5)
             except Exception, e:
                 print str(e)
                 raise abort(500)
@@ -216,12 +222,15 @@ def signup():
                     s2 = Sensors(hardware_id=h.id, type=1, \
                                  sensor_name="Core Temperature")
                     db.add(s2)
-                    s3 = Sensors(hardware_id=h.id, type=2, \
-                                 sensor_name="Core Frequency")
-                    db.add(s3)
-                    s4 = Sensors(hardware_id=h.id, type=3, \
+                    s3 = Sensors(hardware_id=h.id, type=3, \
                                  sensor_name="Core FanRPM")
+                    db.add(s3)
+                    s4 = Sensors(hardware_id=h.id, type=4, \
+                                 sensor_name="Core TempPerLoad")
                     db.add(s4)
+                    s5 = Sensors(hardware_id=h.id, type=6, \
+                                 sensor_name="Core FanRPMPerLoad")
+                    db.add(s5)
             except Exception, e:
                 print str(e)
                 raise abort(500)
@@ -259,8 +268,11 @@ def signup():
             db.add(h)
             db.flush()
             hws_sha1_dict["System"] = rsha1
-            s1 = Sensors(hardware_id=h.id, type=5, \
+            s1 = Sensors(hardware_id=h.id, type=7, \
                          sensor_name="DPC")
+            db.add(s1)
+            s1 = Sensors(hardware_id=h.id, type=8, \
+                         sensor_name="Throttling")
             db.add(s1)
     except Exception, e:
         print str(e)
