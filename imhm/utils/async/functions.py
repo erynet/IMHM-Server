@@ -123,6 +123,7 @@ def proc_parameter(sensor_id):
                  name="imhm.utils.async.functions.proc_regression")
 def proc_regression(sensor_id):
     # 처리한지 15분이 지났으니 오는것임.
+    pass
 # 3. values
 @celery_app.task(base=DefaultPushTask,
                  name="imhm.utils.async.functions.proc_values")
@@ -141,7 +142,7 @@ def proc_smart(sensor_id):
         filter(ReportSession.created_at >= ssid.processed_at).\
         order_by(ReportSession.created_at.asc()).first()
 
-    rows =
+    pass
 
 
 
