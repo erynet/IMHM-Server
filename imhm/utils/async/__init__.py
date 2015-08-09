@@ -13,12 +13,12 @@ class Config:
     CELERY_ACCEPT_CONTENT = ["pickle", "json", "msgpack", "yaml"]
 
     CELERYBEAT_SCHEDULE = {
-        """
+
         "interrupt_timer": {
             "task": "imhm.utils.async.functions.interrupt_timer",
             "schedule": timedelta(seconds=60)
         },
-        """
+
         "warning_processor": {
             "task": "imhm.utils.async.functions.warning_processor",
             "schedule": timedelta(seconds=15)
