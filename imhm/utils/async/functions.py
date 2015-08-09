@@ -12,8 +12,12 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 sys.path.append(os.path.join(basedir, "../../../"))
 
 from celery import Task
+from sqlalchemy import func
 
 from imhm import db_session as db
+from imhm.models import Sensors, Hardwares, \
+    GenericParameters, GenericRegression, GenericSmart, GenericValues, \
+    ReportSession, Warnings
 from imhm.utils.async import celery_app
 
 
@@ -39,6 +43,106 @@ def android_push(uuids, message):
         gcm.plaintext_request(registration_id=uuids, data=message)
 
     return ""
+
+#interrupt_timer
+#warning_processor
+
+# 1. 파라메터
+# 사실 DPC 밖에 없다고 봐도 틀린말이 아니지.
+@celery_app.task(base=DefaultPushTask,
+                 name="imhm.utils.async.functions.proc_parameter")
+def proc_parameter(sensor_id):
+    # 처리한지 15분이 지났으니 오는것임.
+    ssid = db.query(Sensors).filter_by(id=sensor_id)
+    if not ssid:
+        return
+    rssid = db.query(ReportSession).\
+        filter(ReportSession.created_at >= ssid.processed_at).\
+        order_by(ReportSession.created_at.asc()).first()
+
+    dpc_maxs = db.query(func.max(GenericParameters.value)).\
+        filter_by(sensor_id=ssid.id).\
+        filter(GenericParameters.rss_id >= rssid.id).all()
+
+    for dpc in dpc_maxs:
+        dpc_max = dpc
+        break
+
+    row = db.query(GenericParameters).filter_by(value=dpc_max).first()
+
+    if row.value > 250:
+        #high dpc info
+        d = u"DPC 가 25 이 넘었습니다. 오디오 재생같은 실시간 어플리케이션에 장애가 발생할 수 있습니다. "
+        if row.additional == "NDIS.sys":
+            d += u"값을 기록한 드라이버는 NDIS.sys 입니다. "
+            d += u"DDOS 공격을 당하고 있을 가능성이 있습니다."
+            w = Warnings(hardware_id=ssid.harware_id, event_code=10,
+                         event_code_description=d, value=row.value, level=0)
+        elif row.additional == "USBPORT.sys":
+            d += u"값을 기록한 드라이버는 USBPORT.sys 입니다. "
+            d += u"USB 로 연결된 장치중 하나 이상이 올바른 드라이버가 "
+            d += u"없거나 파손되었을 가능성이 있습니다."
+            w = Warnings(hardware_id=ssid.harware_id, event_code=11,
+                         event_code_description=d, value=row.value, level=0)
+        else:
+            d += u"값을 기록한 드라이버는 %s 입니다. " % (row.additional,)
+            w = Warnings(hardware_id=ssid.harware_id, event_code=0,
+                         event_code_description=d, value=row.value, level=0)
+        try:
+            with db.begin_nested():
+                db.add(w)
+        except Exception, e:
+            print str(e)
+
+    elif row.value > 500:
+        #very high dpc warning
+        d = u"DPC 가 500 이 넘었습니다. 오디오 재생같은 실시간 어플리케이션에 장애가 발생합니다. "
+        if row.additional == "NDIS.sys":
+            d += u"값을 기록한 드라이버는 NDIS.sys 입니다. "
+            d += u"DDOS 공격을 당하고 있을 가능성이 있습니다."
+            w = Warnings(hardware_id=ssid.harware_id, event_code=110,
+                         event_code_description=d, value=row.value, level=1)
+        elif row.additional == "USBPORT.sys":
+            d += u"값을 기록한 드라이버는 USBPORT.sys 입니다. "
+            d += u"USB 로 연결된 장치중 하나 이상이 올바른 드라이버가 "
+            d += u"없거나 파손되었을 가능성이 있습니다."
+            w = Warnings(hardware_id=ssid.harware_id, event_code=111,
+                         event_code_description=d, value=row.value, level=1)
+        else:
+            d += u"값을 기록한 드라이버는 %s 입니다. " % (row.additional,)
+            w = Warnings(hardware_id=ssid.harware_id, event_code=100,
+                         event_code_description=d, value=row.value, level=1)
+        try:
+            with db.begin_nested():
+                db.add(w)
+        except Exception, e:
+            print str(e)
+    return ""
+# 2. 선형회귀
+@celery_app.task(base=DefaultPushTask,
+                 name="imhm.utils.async.functions.proc_regression")
+def proc_regression(sensor_id):
+    # 처리한지 15분이 지났으니 오는것임.
+# 3. values
+@celery_app.task(base=DefaultPushTask,
+                 name="imhm.utils.async.functions.proc_values")
+def proc_values(sensor_id):
+    pass
+
+# 4. smart
+@celery_app.task(base=DefaultPushTask,
+                 name="imhm.utils.async.functions.proc_smart")
+def proc_smart(sensor_id):
+    # 처리한지 15분이 지났으니 오는것임.
+    ssid = db.query(Sensors).filter_by(id=sensor_id)
+    if not ssid:
+        return
+    rssid = db.query(ReportSession).\
+        filter(ReportSession.created_at >= ssid.processed_at).\
+        order_by(ReportSession.created_at.asc()).first()
+
+    rows =
+
 
 
 @celery_app.task(base=DefaultPushTask,

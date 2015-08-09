@@ -1,4 +1,5 @@
 # -*- coding:utf-8 -*-
+from datetime import timedelta
 from celery import Celery
 from celery.schedules import crontab
 from flask import current_app
@@ -12,9 +13,13 @@ class Config:
     CELERY_ACCEPT_CONTENT = ["pickle", "json", "msgpack", "yaml"]
 
     CELERYBEAT_SCHEDULE = {
-        "expired_order": {
-            "task": "functions.expired_order",
-            "schedule": crontab(hour=3, minute=19)
+        "interrupt_timer": {
+            "task": "functions.interrupt_timer",
+            "schedule": timedelta(seconds=60)
+        },
+        "warning_processor": {
+            "task": "functions.warning_processor",
+            "schedule": timedelta(seconds=15)
         }
     }
 

@@ -218,7 +218,7 @@ def process():
                     d = data[fp]
                     for l in d:
                         s = GenericSmart(sensor_id=snsr.id, rss_id =rss.id,
-                                         code=l["Value"]["Code"], description=l["Value"]["Description"],
+                                         code=l["Key"], description=l["Value"]["Description"],
                                          threshold=l["Value"]["Thres"], physical=l["Value"]["Physical"])
                         db.add(s)
             except Exception, e:
@@ -233,7 +233,7 @@ def process():
                     d = data[fp]
                     for l in d:
                         s = GenericSmart(sensor_id=snsr.id, rss_id =rss.id,
-                                         code=l["Value"]["Code"], description=l["Value"]["Description"],
+                                         code=l["Key"], description=l["Value"]["Description"],
                                          threshold=l["Value"]["Thres"], physical=l["Value"]["Physical"])
                         db.add(s)
             except Exception, e:
