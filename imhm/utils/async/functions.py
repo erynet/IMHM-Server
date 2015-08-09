@@ -100,7 +100,7 @@ def warning_processor():
                  name="imhm.utils.async.functions.proc_parameters")
 def proc_parameters(sensor_id):
     # 처리한지 15분이 지났으니 오는것임.
-    ssid = db.query(Sensors).filter_by(id=sensor_id)
+    ssid = db.query(Sensors).filter_by(id=sensor_id).first()
     if not ssid:
         return
     rssid = db.query(ReportSession). \
@@ -181,11 +181,11 @@ def proc_regression(sensor_id):
 @celery_app.task(base=DefaultPushTask,
                  name="imhm.utils.async.functions.proc_values")
 def proc_values(sensor_id):
-    ssid = db.query(Sensors).filter_by(id=sensor_id)
+    ssid = db.query(Sensors).filter_by(id=sensor_id).first()
     if not ssid:
         return
     rssid = db.query(ReportSession). \
-        filter(ReportSession.created_at > ssid.processed_at). \
+        filter(ReportSession.created_at >= ssid.processed_at). \
         order_by(ReportSession.created_at.asc()).first()
     hw = db.query(Hardwares).filter_by(id=ssid.harware_id).first()
 
@@ -286,7 +286,7 @@ def proc_values(sensor_id):
                  name="imhm.utils.async.functions.proc_smart")
 def proc_smart(sensor_id):
     # 처리한지 15분이 지났으니 오는것임.
-    ssid = db.query(Sensors).filter_by(id=sensor_id)
+    ssid = db.query(Sensors).filter_by(id=sensor_id).first()
     if not ssid:
         return
     rssid = db.query(ReportSession). \
