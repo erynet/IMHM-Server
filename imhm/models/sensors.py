@@ -43,5 +43,5 @@ class Sensors(SerializerMixin, Base):
     updated_at = Column(DateTime, default=functions.now(),
                         onupdate=functions.now(), nullable=False)
 
-    hardware_id_idx = Index("harware_id_idx", hardware_id)
+    hardware_id_idx = Index("hardware_id_idx", hardware_id)
     processed_at_idx = Index("processed_at_idx", processed_at)

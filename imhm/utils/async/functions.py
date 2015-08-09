@@ -413,13 +413,13 @@ def proc_smart(sensor_id):
         print str(e)
     db.commit()
 
-
+"""
 @celery_app.task(base=DefaultPushTask,
                  name="imhm.utils.async.functions.expired_order")
 def expired_order():
     import datetime
 
-    """
+
     from sadari.models import Order, Operator, OperatorAdminMatch, Point
 
     now = datetime.datetime.now()
@@ -469,6 +469,7 @@ def expired_order():
         master.point += \
             total_commission * (order.master_commission / 100)
         db.flush()
-    """
+
 
     return ""
+    """
