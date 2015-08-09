@@ -1,6 +1,8 @@
 # -*- coding:utf-8 -*-
 import sys
 import json
+import time
+import datetime
 
 reload(sys)
 sys.setdefaultencoding("utf-8")
@@ -15,9 +17,9 @@ from celery import Task
 from sqlalchemy import func
 
 from imhm import db_session as db
-from imhm.models import Sensors, Hardwares, \
+from imhm.models import Sensors, Hardwares, Elements, Groups, \
     GenericParameters, GenericRegression, GenericSmart, GenericValues, \
-    ReportSession, Warnings
+    ReportSession, Warnings, Admin
 from imhm.utils.async import celery_app
 
 
@@ -44,34 +46,80 @@ def android_push(uuids, message):
 
     return ""
 
-#interrupt_timer
-#warning_processor
+
+# interrupt_timer
+@celery_app.task(base=DefaultPushTask,
+                 name="imhm.utils.async.functions.interrupt_timer")
+def interrupt_timer():
+    # 1. Sensors 를 돌면서 processed_at 이 10분이 지난 대상으로 큐잉.
+    dt = datetime.datetime.now() + datetime.timedelta(seconds=-600)
+    targets = db.query(Sensors).filter(Sensors.processed_at < dt).all()
+    for t in targets:
+        if t.type in [0, 1, 2, 3]:
+            proc_values.apply_async(args=[t.id,])
+        elif t.type in [4, 5, 6]:
+            proc_regression.apply_async(args=[t.id,])
+        elif t.type in [7, 8]:
+            proc_parameters.apply_async(args=[t.id,])
+        elif t.type == 9:
+            proc_smart.apply_async(args=[t.id,])
+        else:
+            pass
+    #이 밑으로는 리그레션 프로세서를 넣어야 하는데 ..
+
+
+# warning_processor
+@celery_app.task(base=DefaultPushTask,
+                 name="imhm.utils.async.functions.warning_processor")
+def warning_processor():
+    # android_push.apply_async(args=[user.uuid, message])
+    admins = db.query(Admin).all()
+
+    warns = db.query(Warnings).filter_by(warned=False).all()
+    for warn in warns:
+        uuids = []
+        for admin in admins:
+            if admin.notify_level <= warn.level:
+                uuids.append(admin.uuid)
+        hw = db.query(Hardwares).filter_by(id=warn.hardware_id).first()
+        element = db.query(Elements).filter_by(id=hw.element_id).first()
+        group = db.query(Groups).filter_by(id=element.group_id).first()
+        msg = dict(id=unicode(warn.id), time_code=unicode(time.mktime(Warnings.created_at.timetuple())), \
+                   error_code=unicode(warn.event_code), group_fingerprint=group.fingerprint, \
+                   element_fingerprint=element.fingerprint, machine_name=element.machine_name, \
+                   ip_address_local=element.ip_address_local, ip_address_global=element.ip_address_global, \
+                   hardware_name=hw.hardware_name, warning_level=unicode(warn.level), \
+                   message=unicode(warn.event_code_description))
+        android_push.apply_async(args=[uuids, msg])
+        db.query(Warnings).filter_by(id=warn.id).update({Warnings.warned: True})
+    db.commit()
 
 # 1. 파라메터
 # 사실 DPC 밖에 없다고 봐도 틀린말이 아니지.
 @celery_app.task(base=DefaultPushTask,
-                 name="imhm.utils.async.functions.proc_parameter")
-def proc_parameter(sensor_id):
+                 name="imhm.utils.async.functions.proc_parameters")
+def proc_parameters(sensor_id):
     # 처리한지 15분이 지났으니 오는것임.
     ssid = db.query(Sensors).filter_by(id=sensor_id)
     if not ssid:
         return
-    rssid = db.query(ReportSession).\
-        filter(ReportSession.created_at >= ssid.processed_at).\
+    rssid = db.query(ReportSession). \
+        filter(ReportSession.created_at >= ssid.processed_at). \
         order_by(ReportSession.created_at.asc()).first()
 
-    dpc_maxs = db.query(func.max(GenericParameters.value)).\
-        filter_by(sensor_id=ssid.id).\
-        filter(GenericParameters.rss_id >= rssid.id).all()
+    dpc_maxs = db.query(func.max(GenericParameters.value)). \
+        filter_by(sensor_id=ssid.id). \
+        filter(GenericParameters.rss_id >= rssid.id).first()
 
-    for dpc in dpc_maxs:
-        dpc_max = dpc
-        break
+    # for dpc in dpc_maxs:
+    #    dpc_max = dpc
+    #    break
+    dpc_max = dpc_maxs[0]
 
     row = db.query(GenericParameters).filter_by(value=dpc_max).first()
 
     if row.value > 250:
-        #high dpc info
+        # high dpc info
         d = u"DPC 가 25 이 넘었습니다. 오디오 재생같은 실시간 어플리케이션에 장애가 발생할 수 있습니다. "
         if row.additional == "NDIS.sys":
             d += u"값을 기록한 드라이버는 NDIS.sys 입니다. "
@@ -95,7 +143,7 @@ def proc_parameter(sensor_id):
             print str(e)
 
     elif row.value > 500:
-        #very high dpc warning
+        # very high dpc warning
         d = u"DPC 가 500 이 넘었습니다. 오디오 재생같은 실시간 어플리케이션에 장애가 발생합니다. "
         if row.additional == "NDIS.sys":
             d += u"값을 기록한 드라이버는 NDIS.sys 입니다. "
@@ -117,18 +165,121 @@ def proc_parameter(sensor_id):
                 db.add(w)
         except Exception, e:
             print str(e)
+    db.commit()
     return ""
+
+
 # 2. 선형회귀
 @celery_app.task(base=DefaultPushTask,
                  name="imhm.utils.async.functions.proc_regression")
 def proc_regression(sensor_id):
     # 처리한지 15분이 지났으니 오는것임.
     pass
+
+
 # 3. values
 @celery_app.task(base=DefaultPushTask,
                  name="imhm.utils.async.functions.proc_values")
 def proc_values(sensor_id):
-    pass
+    ssid = db.query(Sensors).filter_by(id=sensor_id)
+    if not ssid:
+        return
+    rssid = db.query(ReportSession). \
+        filter(ReportSession.created_at >= ssid.processed_at). \
+        order_by(ReportSession.created_at.asc()).first()
+    hw = db.query(Hardwares).filter_by(id=ssid.harware_id).first()
+
+    if hw.type == 0:
+        # cpu
+        d = u"CPU 온도가 너무 높습니다.  "
+        # 1 : Core Temperature  /   value
+        w = None
+        avg_min = db.query(func.avg(GenericValues.min)). \
+            filter_by(sensor_id=ssid.id). \
+            filter(GenericSmart.rss_id >= rssid.id).first()
+        if avg_min[0] > 75:
+            d += u"CPU 최저 온도가 %d 를 넘습니다. 쿨러를 체크하세요." % (int(avg_min[0]))
+            w = Warnings(hardware_id=ssid.harware_id, event_code=500,
+                         event_code_description=d, value=(int(avg_min[0])), level=1)
+        elif avg_min[0] > 65:
+            d += u"CPU 최저 온도가 %d 를 넘습니다. 쿨러를 체크하세요." % (int(avg_min[0]))
+            w = Warnings(hardware_id=ssid.harware_id, event_code=501,
+                         event_code_description=d, value=(int(avg_min[0])), level=0)
+        if not (w == None):
+            try:
+                with db.begin_nested():
+                    db.add(w)
+            except Exception, e:
+                print str(e)
+        w = None
+        avg_max = db.query(func.avg(GenericValues.max)). \
+            filter_by(sensor_id=ssid.id). \
+            filter(GenericSmart.rss_id >= rssid.id).first()
+        if avg_max[0] > 90:
+            d += u"CPU 최고 온도가 %d 를 넘습니다. 쿨러를 체크하세요." % (int(avg_min[0]))
+            w = Warnings(hardware_id=ssid.harware_id, event_code=502,
+                         event_code_description=d, value=(int(avg_min[0])), level=2)
+        elif avg_max[0] > 80:
+            d += u"CPU 최고 온도가 %d 를 넘습니다. 쿨러를 체크하세요." % (int(avg_min[0]))
+            w = Warnings(hardware_id=ssid.harware_id, event_code=503,
+                         event_code_description=d, value=(int(avg_min[0])), level=1)
+        if not (w == None):
+            try:
+                with db.begin_nested():
+                    db.add(w)
+            except Exception, e:
+                print str(e)
+    elif hw.type == 2:
+        # Nvidia GPU
+        d = u"GPU 온도가 너무 높습니다.  "
+        # 1 : Core Temperature  /   value
+        w = None
+        avg_min = db.query(func.avg(GenericValues.min)). \
+            filter_by(sensor_id=ssid.id). \
+            filter(GenericSmart.rss_id >= rssid.id).first()
+        if avg_min[0] > 80:
+            d += u"GPU 최저 온도가 %d 를 넘습니다. 쿨러를 체크하세요." % (int(avg_min[0]))
+            w = Warnings(hardware_id=ssid.harware_id, event_code=504,
+                         event_code_description=d, value=(int(avg_min[0])), level=1)
+        elif avg_min[0] > 70:
+            d += u"GPU 최저 온도가 %d 를 넘습니다. 쿨러를 체크하세요." % (int(avg_min[0]))
+            w = Warnings(hardware_id=ssid.harware_id, event_code=505,
+                         event_code_description=d, value=(int(avg_min[0])), level=0)
+        if not (w == None):
+            try:
+                with db.begin_nested():
+                    db.add(w)
+            except Exception, e:
+                print str(e)
+        w = None
+        avg_max = db.query(func.avg(GenericValues.max)). \
+            filter_by(sensor_id=ssid.id). \
+            filter(GenericSmart.rss_id >= rssid.id).first()
+        if avg_max[0] > 95:
+            d += u"GPU 최고 온도가 %d 를 넘습니다. 쿨러를 체크하세요." % (int(avg_min[0]))
+            w = Warnings(hardware_id=ssid.harware_id, event_code=506,
+                         event_code_description=d, value=(int(avg_min[0])), level=2)
+        elif avg_max[0] > 85:
+            d += u"GPU 최고 온도가 %d 를 넘습니다. 쿨러를 체크하세요." % (int(avg_min[0]))
+            w = Warnings(hardware_id=ssid.harware_id, event_code=507,
+                         event_code_description=d, value=(int(avg_min[0])), level=1)
+        if not (w == None):
+            try:
+                with db.begin_nested():
+                    db.add(w)
+            except Exception, e:
+                print str(e)
+    elif hw.type == 3:
+        # AMD GPU
+        pass
+
+    try:
+        with db.begin_nested():
+            db.query(Sensors).filter_by(id=sensor_id). \
+                update({Sensors.processed_at: datetime.datetime.now()})
+    except Exception, e:
+        print str(e)
+    db.commit()
 
 # 4. smart
 @celery_app.task(base=DefaultPushTask,
@@ -138,12 +289,129 @@ def proc_smart(sensor_id):
     ssid = db.query(Sensors).filter_by(id=sensor_id)
     if not ssid:
         return
-    rssid = db.query(ReportSession).\
-        filter(ReportSession.created_at >= ssid.processed_at).\
+    rssid = db.query(ReportSession). \
+        filter(ReportSession.created_at >= ssid.processed_at). \
         order_by(ReportSession.created_at.asc()).first()
 
-    pass
+    rows = db.query(GenericSmart.code, \
+                    func.min(GenericSmart.physical), \
+                    func.max(GenericSmart.physical), \
+                    GenericSmart.threshold, GenericSmart.description). \
+        filter_by(sensor_id=ssid.id). \
+        filter(GenericSmart.rss_id >= rssid.id). \
+        group_by(GenericSmart.code).all()
 
+    for row in rows:
+        code, min, max, thres, desc = row
+        w = None
+        d = u"HDD/SSD 관련 정보입니다. "
+        if code == 5:
+            # 1. 수치 5 이하에서 증가(Info)
+            if max < 5:
+                if max - min > 0:
+                    comment = u"Reallocated Sector 수의 증가는 하드디스크 이상의 전조일 수 있습니다."
+                    d += u"S.M.A.R.T Code : %d, Description : %s, Value : %d, Comment : %s" % \
+                         (code, desc, max, comment)
+                    w = Warnings(hardware_id=ssid.harware_id, event_code=200,
+                                 event_code_description=d, value=max, level=0)
+            # 2. 수치 5 이상에서 증가(Warning)
+            elif max >= 5:
+                if max - min > 0:
+                    comment = u"Reallocated Sector 수의 증가는 하드디스크 이상의 전조일 수 있습니다."
+                    d += u"S.M.A.R.T Code : %d, Description : %s, Value : %d, Comment : %s" % \
+                         (code, desc, max, comment)
+                    w = Warnings(hardware_id=ssid.harware_id, event_code=201,
+                                 event_code_description=d, value=max, level=1)
+            # 3. 수치 7 이상에서 증가(Alert)
+            elif max >= 7:
+                if max - min > 0:
+                    comment = u"Reallocated Sector 수가 임계점을 넘었습니다. 데이터를 백업하십시오."
+                    d += u"S.M.A.R.T Code : %d, Description : %s, Value : %d, Comment : %s" % \
+                         (code, desc, max, comment)
+                    w = Warnings(hardware_id=ssid.harware_id, event_code=202,
+                                 event_code_description=d, value=max, level=2)
+        elif code == 9:
+            if max > 43800:
+                comment = u"하드디스크 가동시간이 3년이 넘었습니다. 교체를 고려하십시오."
+                d += u"S.M.A.R.T Code : %d, Description : %s, Value : %d, Comment : %s" % \
+                     (code, desc, max, comment)
+                w = Warnings(hardware_id=ssid.harware_id, event_code=300,
+                             event_code_description=d, value=max, level=1)
+        elif code == 10:
+            if max - min > 0:
+                comment = u"Spin Retry Count 수의 증가는 하드디스크 구동부 문제거나 전원의 불안정을 암시합니다."
+                d += u"S.M.A.R.T Code : %d, Description : %s, Value : %d, Comment : %s" % \
+                     (code, desc, max, comment)
+                w = Warnings(hardware_id=ssid.harware_id, event_code=400,
+                             event_code_description=d, value=max, level=1)
+        elif code == 183:
+            if max - min > 0:
+                comment = u"SATA Downshift Error 는 SATA 케아블의 불량이나 관련 칩셋의 문제를 의미합니다."
+                d += u"S.M.A.R.T Code : %d, Description : %s, Value : %d, Comment : %s" % \
+                     (code, desc, max, comment)
+                w = Warnings(hardware_id=ssid.harware_id, event_code=401,
+                             event_code_description=d, value=max, level=2)
+        elif code == 187:
+            if max - min > 0:
+                comment = u"Reported Uncorrectable Error 수의 증가는 심각한 수준의 하드디스크 플래터 손상이나 기판의 문제를 의미합니다."
+                d += u"S.M.A.R.T Code : %d, Description : %s, Value : %d, Comment : %s" % \
+                     (code, desc, max, comment)
+                w = Warnings(hardware_id=ssid.harware_id, event_code=203,
+                             event_code_description=d, value=max, level=2)
+        elif code == 188:
+            if max - min > 0:
+                comment = u"Command Timeout 는 SATA 케아블의 불량이나 전원의 불안정을 암시합니다. 데이터 오염이 발생할 수 있습니다."
+                d += u"S.M.A.R.T Code : %d, Description : %s, Value : %d, Comment : %s" % \
+                     (code, desc, max, comment)
+                w = Warnings(hardware_id=ssid.harware_id, event_code=402,
+                             event_code_description=d, value=max, level=2)
+        elif code == 191:
+            if max - min > 0:
+                comment = u"Mechanical Shock 는 대상 PC 가 불안정한 위치에 있거나 충격을 받는 경우 발생합니다."
+                d += u"S.M.A.R.T Code : %d, Description : %s, Value : %d, Comment : %s" % \
+                     (code, desc, max, comment)
+                w = Warnings(hardware_id=ssid.harware_id, event_code=301,
+                             event_code_description=d, value=max, level=1)
+        elif code == 194:
+            if max > 55:
+                comment = u"온도가 55도 이상입니다. 하드디스크의 급격한 노화가 진행될 수 있습니다."
+                d += u"S.M.A.R.T Code : %d, Description : %s, Value : %d, Comment : %s" % \
+                     (code, desc, max, comment)
+                w = Warnings(hardware_id=ssid.harware_id, event_code=303,
+                             event_code_description=d, value=max, level=1)
+            elif max > 45:
+                comment = u"온도가 45도 이상입니다."
+                d += u"S.M.A.R.T Code : %d, Description : %s, Value : %d, Comment : %s" % \
+                     (code, desc, max, comment)
+                w = Warnings(hardware_id=ssid.harware_id, event_code=302,
+                             event_code_description=d, value=max, level=0)
+        # 중간은잠시 생략, 196, 197, 198, 199, 201, 230
+        elif code == 231:
+            if max > 55:
+                comment = u"온도가 55도 이상입니다. 하드디스크의 급격한 노화가 진행될 수 있습니다."
+                d += u"S.M.A.R.T Code : %d, Description : %s, Value : %d, Comment : %s" % \
+                     (code, desc, max, comment)
+                w = Warnings(hardware_id=ssid.harware_id, event_code=303,
+                             event_code_description=d, value=max, level=1)
+            elif max > 45:
+                comment = u"온도가 45도 이상입니다."
+                d += u"S.M.A.R.T Code : %d, Description : %s, Value : %d, Comment : %s" % \
+                     (code, desc, max, comment)
+                w = Warnings(hardware_id=ssid.harware_id, event_code=302,
+                             event_code_description=d, value=max, level=0)
+        if not (w == None):
+            try:
+                with db.begin_nested():
+                    db.add(w)
+            except Exception, e:
+                print str(e)
+    try:
+        with db.begin_nested():
+            db.query(Sensors).filter_by(id=sensor_id). \
+                update({Sensors.processed_at: datetime.datetime.now()})
+    except Exception, e:
+        print str(e)
+    db.commit()
 
 
 @celery_app.task(base=DefaultPushTask,

@@ -23,7 +23,7 @@ class Warnings(SerializerMixin, Base):
                          ForeignKey("hardwares.id", onupdate="CASCADE", ondelete="CASCADE"), \
                          nullable=False)
     event_code = Column(Integer, nullable=False)
-    event_code_description = Column(String(1024), nullable=True)
+    event_code_description = Column(BLOB, nullable=True)
     value = Column(Integer, nullable=False)
 
     level = Column(Integer, default=0, nullable=False)
