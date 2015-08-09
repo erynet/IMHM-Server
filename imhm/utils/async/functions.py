@@ -185,7 +185,7 @@ def proc_values(sensor_id):
     if not ssid:
         return
     rssid = db.query(ReportSession). \
-        filter(ReportSession.created_at >= ssid.processed_at). \
+        filter(ReportSession.created_at > ssid.processed_at). \
         order_by(ReportSession.created_at.asc()).first()
     hw = db.query(Hardwares).filter_by(id=ssid.harware_id).first()
 
