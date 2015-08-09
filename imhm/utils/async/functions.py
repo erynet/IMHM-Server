@@ -84,7 +84,7 @@ def warning_processor():
         hw = db.query(Hardwares).filter_by(id=warn.hardware_id).first()
         element = db.query(Elements).filter_by(id=hw.element_id).first()
         group = db.query(Groups).filter_by(id=element.group_id).first()
-        msg = dict(id=unicode(warn.id), time_code=unicode(time.mktime(Warnings.created_at.timetuple())), \
+        msg = dict(id=unicode(warn.id), time_code=unicode(time.mktime(warn.timestamp.timetuple())), \
                    error_code=unicode(warn.event_code), group_fingerprint=group.fingerprint, \
                    element_fingerprint=element.fingerprint, machine_name=element.machine_name, \
                    ip_address_local=element.ip_address_local, ip_address_global=element.ip_address_global, \
