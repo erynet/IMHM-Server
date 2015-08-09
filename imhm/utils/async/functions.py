@@ -187,7 +187,7 @@ def proc_values(sensor_id):
     rssid = db.query(ReportSession). \
         filter(ReportSession.created_at >= ssid.processed_at). \
         order_by(ReportSession.created_at.asc()).first()
-    hw = db.query(Hardwares).filter_by(id=ssid.harware_id).first()
+    hw = db.query(Hardwares).filter_by(id=ssid.hardware_id).first()
 
     if hw.type == 0:
         # cpu
