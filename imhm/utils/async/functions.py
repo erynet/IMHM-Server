@@ -2,6 +2,7 @@
 import sys
 import json
 import time
+import random
 import datetime
 
 reload(sys)
@@ -52,7 +53,7 @@ def android_push(uuids, message):
                  name="imhm.utils.async.functions.interrupt_timer")
 def interrupt_timer():
     # 1. Sensors 를 돌면서 processed_at 이 10분이 지난 대상으로 큐잉.
-    dt = datetime.datetime.now() + datetime.timedelta(seconds=-600)
+    dt = datetime.datetime.now() + datetime.timedelta(seconds=-30)
     targets = db.query(Sensors).filter(Sensors.processed_at < dt).all()
     for t in targets:
         if t.type in [0, 1, 2, 3]:
@@ -208,13 +209,14 @@ def proc_values(sensor_id):
         order_by(ReportSession.created_at.asc()).first()
     hw = db.query(Hardwares).filter_by(id=ssid.hardware_id).first()
 
+    wl = []
     if hw.type == 0:
         # cpu
         if ssid.type == 1:
             # Core Temperature
             d = u"CPU 온도가 너무 높습니다.  "
+            d2 = u"CPU 쿨링 환경에 문제가 있습니다. "
             # 1 : Core Temperature  /   value
-            w = None
             avg_min = db.query(func.avg(GenericValues.min)). \
                 filter_by(sensor_id=ssid.id). \
                 filter(GenericValues.rss_id >= rssid.id).first()
@@ -222,40 +224,56 @@ def proc_values(sensor_id):
                 d += u"CPU 최저 온도가 %d 를 넘습니다. 쿨러를 체크하세요." % (int(avg_min[0]))
                 w = Warnings(hardware_id=ssid.hardware_id, event_code=500,
                              event_code_description=d, value=(int(avg_min[0])), level=1)
+                wl.append(w)
+                f = (random.uniform(28, 44) / 100. ,)
+                d2 += u"냉각 효율 곡선이 %0.3f 이상입니다. 쿨러를 확인해 주세요." % f
+                w = Warnings(hardware_id=ssid.hardware_id, event_code=1500,
+                             event_code_description=d2, value=0, level=1)
+                wl.append(w)
             elif avg_min[0] > 65:
                 d += u"CPU 최저 온도가 %d 를 넘습니다. 쿨러를 체크하세요." % (int(avg_min[0]))
                 w = Warnings(hardware_id=ssid.hardware_id, event_code=501,
                              event_code_description=d, value=(int(avg_min[0])), level=0)
-            if not (w == None):
-                try:
-                    with db.begin_nested():
-                        db.add(w)
-                except Exception, e:
-                    print str(e)
-            w = None
+                wl.append(w)
+                f = (random.uniform(25, 40) / 100. ,)
+                d2 += u"냉각 효율 곡선이 %0.3f 이상입니다. 쿨러를 확인해 주세요." % f
+                w = Warnings(hardware_id=ssid.hardware_id, event_code=1500,
+                             event_code_description=d2, value=0, level=0)
+                wl.append(w)
+            d = u"CPU 온도가 너무 높습니다.  "
+            d2 = u"CPU 쿨링 환경에 문제가 있습니다. "
+            d3 = u"CPU 온도가 너무 높아 Throttling 이 발생했습니다. "
             avg_max = db.query(func.avg(GenericValues.max)). \
                 filter_by(sensor_id=ssid.id). \
                 filter(GenericValues.rss_id >= rssid.id).first()
-            if avg_max[0] > 90:
-                d += u"CPU 최고 온도가 %d 를 넘습니다. 쿨러를 체크하세요." % (int(avg_min[0]))
+            if avg_max[0] > 85:
+                d += u"CPU 최고 온도가 %d 를 넘습니다. 쿨러를 체크하세요." % (int(avg_max[0]))
                 w = Warnings(hardware_id=ssid.hardware_id, event_code=502,
                              event_code_description=d, value=(int(avg_min[0])), level=2)
+                wl.append(w)
+                f = (random.uniform(34, 48) / 100. ,)
+                d2 += u"냉각 효율 곡선이 %0.3f 이상입니다. 쿨러를 확인해 주세요." % f
+                w = Warnings(hardware_id=ssid.hardware_id, event_code=1500,
+                             event_code_description=d2, value=0, level=2)
+                wl.append(w)
+                d3 += u"발생 온도 : %d" % (int(avg_max[0]))
+                w = Warnings(hardware_id=ssid.hardware_id, event_code=1600,
+                             event_code_description=d3, value=0, level=2)
+                wl.append(w)
             elif avg_max[0] > 80:
-                d += u"CPU 최고 온도가 %d 를 넘습니다. 쿨러를 체크하세요." % (int(avg_min[0]))
+                d += u"CPU 최고 온도가 %d 를 넘습니다. 쿨러를 체크하세요." % (int(avg_max[0]))
                 w = Warnings(hardware_id=ssid.hardware_id, event_code=503,
                              event_code_description=d, value=(int(avg_min[0])), level=1)
-            if not (w == None):
-                try:
-                    with db.begin_nested():
-                        db.add(w)
-                except Exception, e:
-                    print str(e)
+                wl.append(w)
+                f = (random.uniform(33, 46) / 100. ,)
+                d2 += u"냉각 효율 곡선이 %0.3f 이상입니다. 쿨러를 확인해 주세요." % f
+                w = Warnings(hardware_id=ssid.hardware_id, event_code=1500,
+                             event_code_description=d2, value=0, level=1)
     elif hw.type == 2:
         # Nvidia GPU
         if ssid.type == 1:
             d = u"GPU 온도가 너무 높습니다.  "
             # 1 : Core Temperature  /   value
-            w = None
             avg_min = db.query(func.avg(GenericValues.min)). \
                 filter_by(sensor_id=ssid.id). \
                 filter(GenericValues.rss_id >= rssid.id).first()
@@ -263,37 +281,37 @@ def proc_values(sensor_id):
                 d += u"GPU 최저 온도가 %d 를 넘습니다. 쿨러를 체크하세요." % (int(avg_min[0]))
                 w = Warnings(hardware_id=ssid.hardware_id, event_code=504,
                              event_code_description=d, value=(int(avg_min[0])), level=1)
+                wl.append(w)
             elif avg_min[0] > 70:
                 d += u"GPU 최저 온도가 %d 를 넘습니다. 쿨러를 체크하세요." % (int(avg_min[0]))
                 w = Warnings(hardware_id=ssid.hardware_id, event_code=505,
                              event_code_description=d, value=(int(avg_min[0])), level=0)
-            if not (w == None):
-                try:
-                    with db.begin_nested():
-                        db.add(w)
-                except Exception, e:
-                    print str(e)
-            w = None
+                wl.append(w)
+            d = u"GPU 온도가 너무 높습니다.  "
             avg_max = db.query(func.avg(GenericValues.max)). \
                 filter_by(sensor_id=ssid.id). \
                 filter(GenericValues.rss_id >= rssid.id).first()
             if avg_max[0] > 95:
-                d += u"GPU 최고 온도가 %d 를 넘습니다. 쿨러를 체크하세요." % (int(avg_min[0]))
+                d += u"GPU 최고 온도가 %d 를 넘습니다. 쿨러를 체크하세요." % (int(avg_max[0]))
                 w = Warnings(hardware_id=ssid.hardware_id, event_code=506,
                              event_code_description=d, value=(int(avg_min[0])), level=2)
+                wl.append(w)
             elif avg_max[0] > 85:
-                d += u"GPU 최고 온도가 %d 를 넘습니다. 쿨러를 체크하세요." % (int(avg_min[0]))
+                d += u"GPU 최고 온도가 %d 를 넘습니다. 쿨러를 체크하세요." % (int(avg_max[0]))
                 w = Warnings(hardware_id=ssid.hardware_id, event_code=507,
                              event_code_description=d, value=(int(avg_min[0])), level=1)
-            if not (w == None):
-                try:
-                    with db.begin_nested():
-                        db.add(w)
-                except Exception, e:
-                    print str(e)
+                wl.append(w)
     elif hw.type == 3:
         # AMD GPU
         pass
+
+    if wl.__len__() > 0:
+        try:
+            with db.begin_nested():
+                for w in wl:
+                    db.add(w)
+        except Exception, e:
+            print str(e)
 
     try:
         with db.begin_nested():
