@@ -87,7 +87,7 @@ def query():
             if d[2] == "in":
                 if d[3] == "element":
                     hl = []
-                    e = db.query(Elements).filter_by(machine_name=d[4]).first()
+                    e = db.query(Elements).filter_by(fingerprint=d[4]).first()
                     if not e:
                         raise abort(404)
                     for hw in db.query(Hardwares).filter_by(element_id=e.id).all():
@@ -97,9 +97,9 @@ def query():
                     for w in warns:
                         hw = db.query(Hardwares).filter_by(id=w.hardware_id).first()
 
-                        z += w.timestamp + " / " + e.machine_name + " / " + hw.hardware_name + " / " + w.code + " / " + w.event_code_description + "\n"
+                        z += w.timestamp + " / " + e.machi
+                    return jsonify(results), 200ne_name + " / " + hw.hardware_name + " / " + w.code + " / " + w.event_code_description + "\n"
                     results["result"] = z
-                    return jsonify(results), 200
     elif d[0] == "report":
         #8. report machine #####
         if d[1] == "machine":
