@@ -97,8 +97,9 @@ def query():
                     for w in warns:
                         hw = db.query(Hardwares).filter_by(id=w.hardware_id).first()
                         z += str(w.timestamp) + " / " + e.machine_name + " / " + hw.hardware_name + " / " + str(w.level) + " / " + w.event_code_description + "\n"
-                    return jsonify(results), 200
+
                     results["result"] = z
+                    return jsonify(results), 200
     elif d[0] == "report":
         #8. report machine #####
         if d[1] == "machine":
