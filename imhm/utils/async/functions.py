@@ -236,12 +236,12 @@ def proc_values(sensor_id):
                 d += u"CPU 최고 온도가 %d 를 넘습니다. 쿨러를 체크하세요." % (int(avg_min[0]))
                 w = Warnings(hardware_id=ssid.hardware_id, event_code=503,
                              event_code_description=d, value=(int(avg_min[0])), level=1)
-        if not (w == None):
-            try:
-                with db.begin_nested():
-                    db.add(w)
-            except Exception, e:
-                print str(e)
+            if not (w == None):
+                try:
+                    with db.begin_nested():
+                        db.add(w)
+                except Exception, e:
+                    print str(e)
     elif hw.type == 2:
         # Nvidia GPU
         if ssid.type == 1:
@@ -277,13 +277,12 @@ def proc_values(sensor_id):
                 d += u"GPU 최고 온도가 %d 를 넘습니다. 쿨러를 체크하세요." % (int(avg_min[0]))
                 w = Warnings(hardware_id=ssid.hardware_id, event_code=507,
                              event_code_description=d, value=(int(avg_min[0])), level=1)
-
-        if not (w == None):
-            try:
-                with db.begin_nested():
-                    db.add(w)
-            except Exception, e:
-                print str(e)
+            if not (w == None):
+                try:
+                    with db.begin_nested():
+                        db.add(w)
+                except Exception, e:
+                    print str(e)
     elif hw.type == 3:
         # AMD GPU
         pass
