@@ -45,4 +45,4 @@ def query():
     data = json.loads(request.data)
     print data
 
-    return "", 200
+    return data, 200
