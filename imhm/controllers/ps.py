@@ -16,7 +16,7 @@ ps_blueprint = Blueprint(__name__, "ps")
 from sqlalchemy import and_, or_
 
 from imhm import db_session as db, login_required
-from imhm.models import Groups, Elements, Hardwares, Sensors
+from imhm.models import Groups, Elements, Hardwares, Sensors, Warnings
 
 
 @ps_blueprint.before_request
@@ -83,12 +83,39 @@ def query():
             results["result"] = z
             return jsonify(results), 200
     elif d[0] == "list":
-        #5. list elements in group AGasfasfASFAS have warning (above 0)
-        #6. list warnings in element ASavASVAsfas (above 0)
-        #7. list warnings in machine WS-LDONGHOE (above 0)
-        pass
+        if d[1] == "warnings":
+            if d[2] == "in":
+                if d[3] == "element":
+                    hl = []
+                    e = db.query(Elements).filter_by(machine_name=d[4]).first()
+                    if not e:
+                        raise abort(404)
+                    for hw in db.query(Hardwares).filter_by(element_id=e.id).all():
+                        hl.append(hw.id)
+                    warns = db.query(Warnings).filter(Warnings.hardware_id.in_(hl)).\
+                        order_by(Warnings.timestamp.desc()).all()
+                    for w in warns:
+                        hw = db.query(Hardwares).filter_by(id=w.hardware_id).first()
+
+                        z += w.timestamp + " / " + e.machine_name + " / " + hw.hardware_name + " / " + w.code + " / " + w.event_code_description + "\n"
+                    results["result"] = z
+                    return jsonify(results), 200
     elif d[0] == "report":
         #8. report machine #####
+        if d[1] == "machine":
+            e = db.query(Elements).filter_by(machine_name=d[2]).first()
+            if not e:
+                raise abort(404)
+            z = "http://210.118.74.204:38271/hwreport/" + e.fingerprint + "/"
+            results["result"] = z
+            return jsonify(results), 200
         #9. report element #####
+        elif d[1] == "element":
+            e = db.query(Elements).filter_by(fingerprint=d[2]).first()
+            if not e:
+                raise abort(404)
+            z = "http://210.118.74.204:38271/hwreport/" + e.fingerprint + "/"
+            results["result"] = z
+            return jsonify(results), 200
         pass
     raise abort(404)
