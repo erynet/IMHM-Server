@@ -11,7 +11,7 @@ import base64
 
 from flask import abort, Blueprint, request, jsonify, session, make_response
 
-report_blueprint = Blueprint(__name__, "report")
+ps_blueprint = Blueprint(__name__, "ps")
 
 from sqlalchemy import and_, or_
 
@@ -19,7 +19,7 @@ from imhm import db_session as db, login_required
 from imhm.models import Groups, Elements, Hardwares, Sensors
 
 
-@report_blueprint.before_request
+@ps_blueprint.before_request
 def pre_request_logging():
     import sys
     reload(sys)
@@ -37,9 +37,9 @@ def pre_request_logging():
     )
 
 
-@report_blueprint.route("/hwreport/<fingerprint>/", methods=["GET"])
+@ps_blueprint.route("/ps/", methods=["post"])
 # @login_required
-def hw_report(fingerprint):
+def hw_report():
     # 1. 받은 데이터의 키가 모두 존재하나 검사한다.
     # 2. ElementFingerprint 와 일치하는 존재가 있나 확인한다.
     # 3. LocalIPAddress, GlobalIPAddress, MachineName,

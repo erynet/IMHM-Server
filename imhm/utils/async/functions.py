@@ -176,6 +176,14 @@ def proc_parameters(sensor_id):
                 db.add(w)
         except Exception, e:
             print str(e)
+
+    try:
+        with db.begin_nested():
+            db.query(Sensors).filter_by(id=sensor_id). \
+                update({Sensors.processed_at: datetime.datetime.now()})
+    except Exception, e:
+        print str(e)
+
     db.commit()
     return ""
 
