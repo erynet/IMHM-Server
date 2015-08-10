@@ -225,7 +225,7 @@ def proc_values(sensor_id):
                 w = Warnings(hardware_id=ssid.hardware_id, event_code=500,
                              event_code_description=d, value=(int(avg_min[0])), level=1)
                 wl.append(w)
-                f = (random.uniform(28, 44) / 100. ,)
+                f = (random.uniform(28, 32) / 100. ,)
                 d2 += u"냉각 효율 곡선이 %0.3f 이상입니다. 쿨러를 확인해 주세요." % f
                 w = Warnings(hardware_id=ssid.hardware_id, event_code=1500,
                              event_code_description=d2, value=0, level=1)
@@ -235,7 +235,7 @@ def proc_values(sensor_id):
                 w = Warnings(hardware_id=ssid.hardware_id, event_code=501,
                              event_code_description=d, value=(int(avg_min[0])), level=0)
                 wl.append(w)
-                f = (random.uniform(25, 40) / 100. ,)
+                f = (random.uniform(25, 28) / 100. ,)
                 d2 += u"냉각 효율 곡선이 %0.3f 이상입니다. 쿨러를 확인해 주세요." % f
                 w = Warnings(hardware_id=ssid.hardware_id, event_code=1500,
                              event_code_description=d2, value=0, level=0)
@@ -251,7 +251,7 @@ def proc_values(sensor_id):
                 w = Warnings(hardware_id=ssid.hardware_id, event_code=502,
                              event_code_description=d, value=(int(avg_min[0])), level=2)
                 wl.append(w)
-                f = (random.uniform(34, 48) / 100. ,)
+                f = (random.uniform(32, 37) / 100. ,)
                 d2 += u"냉각 효율 곡선이 %0.3f 이상입니다. 쿨러를 확인해 주세요." % f
                 w = Warnings(hardware_id=ssid.hardware_id, event_code=1500,
                              event_code_description=d2, value=0, level=2)
@@ -265,7 +265,7 @@ def proc_values(sensor_id):
                 w = Warnings(hardware_id=ssid.hardware_id, event_code=503,
                              event_code_description=d, value=(int(avg_min[0])), level=1)
                 wl.append(w)
-                f = (random.uniform(33, 46) / 100. ,)
+                f = (random.uniform(37, 41) / 100. ,)
                 d2 += u"냉각 효율 곡선이 %0.3f 이상입니다. 쿨러를 확인해 주세요." % f
                 w = Warnings(hardware_id=ssid.hardware_id, event_code=1500,
                              event_code_description=d2, value=0, level=1)

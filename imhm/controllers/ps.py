@@ -37,25 +37,12 @@ def pre_request_logging():
     )
 
 
-@ps_blueprint.route("/ps/", methods=["post"])
+@ps_blueprint.route("/query/", methods=["post"])
 # @login_required
-def hw_report():
+def query():
+    results = {}
     # 1. 받은 데이터의 키가 모두 존재하나 검사한다.
-    # 2. ElementFingerprint 와 일치하는 존재가 있나 확인한다.
-    # 3. LocalIPAddress, GlobalIPAddress, MachineName,
-    #   HardwareReport 업데이트
-    # 4. 결과물은 ElementFingerprint 와 GroupFingerprint 이다.
-    element = db.query(Elements). \
-        filter_by(fingerprint=fingerprint).first()
+    data = json.loads(request.data)
+    print data
 
-    if not element:
-        raise abort(404)
-
-    # print "DEBUG"
-    # base64 디코드 필수임
-
-    response = make_response(base64.b64decode(element.report))
-    response.headers["Content-Disposition"] = "attachment; filename=%s.txt" % \
-            (element.machine_name + "-" + fingerprint,)
-
-    return response, 200
+    return "", 200
