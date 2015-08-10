@@ -96,7 +96,6 @@ def query():
                         order_by(Warnings.timestamp.desc()).all()
                     for w in warns:
                         hw = db.query(Hardwares).filter_by(id=w.hardware_id).first()
-
                         z += str(w.timestamp) + " / " + e.machine_name + " / " + hw.hardware_name + " / " + str(w.level) + " / " + w.event_code_description + "\n"
                     return jsonify(results), 200
                     results["result"] = z
