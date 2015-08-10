@@ -56,13 +56,16 @@ def interrupt_timer():
     targets = db.query(Sensors).filter(Sensors.processed_at < dt).all()
     for t in targets:
         if t.type in [0, 1, 2, 3]:
-            proc_values.apply_async(args=[t.id,])
+            #proc_values.apply_async(args=[t.id,])
+            pass
         elif t.type in [4, 5, 6]:
-            proc_regression.apply_async(args=[t.id,])
+            #proc_regression.apply_async(args=[t.id,])
+            pass
         elif t.type in [7, 8]:
             proc_parameters.apply_async(args=[t.id,])
         elif t.type == 9:
-            proc_smart.apply_async(args=[t.id,])
+            #proc_smart.apply_async(args=[t.id,])
+            pass
         else:
             pass
     #이 밑으로는 리그레션 프로세서를 넣어야 하는데 ..
@@ -115,8 +118,14 @@ def proc_parameters(sensor_id):
     #    dpc_max = dpc
     #    break
     dpc_max = dpc_maxs[0]
+    print dpc_maxs;
 
-    row = db.query(GenericParameters).filter_by(value=dpc_max).first()
+    #row = db.query(GenericParameters).filter_by(value=dpc_max).first()
+    row = db.query(GenericParameters). \
+        filter_by(sensor_id=ssid.id). \
+        filter_by(value=dpc_max). \
+        filter(GenericParameters.rss_id >= rssid.id).first()
+
 
     if row.value > 250:
         # high dpc info
@@ -124,17 +133,17 @@ def proc_parameters(sensor_id):
         if row.additional == "NDIS.sys":
             d += u"값을 기록한 드라이버는 NDIS.sys 입니다. "
             d += u"DDOS 공격을 당하고 있을 가능성이 있습니다."
-            w = Warnings(hardware_id=ssid.harware_id, event_code=10,
+            w = Warnings(hardware_id=ssid.hardware_id, event_code=10,
                          event_code_description=d, value=row.value, level=0)
         elif row.additional == "USBPORT.sys":
             d += u"값을 기록한 드라이버는 USBPORT.sys 입니다. "
             d += u"USB 로 연결된 장치중 하나 이상이 올바른 드라이버가 "
             d += u"없거나 파손되었을 가능성이 있습니다."
-            w = Warnings(hardware_id=ssid.harware_id, event_code=11,
+            w = Warnings(hardware_id=ssid.hardware_id, event_code=11,
                          event_code_description=d, value=row.value, level=0)
         else:
             d += u"값을 기록한 드라이버는 %s 입니다. " % (row.additional,)
-            w = Warnings(hardware_id=ssid.harware_id, event_code=0,
+            w = Warnings(hardware_id=ssid.hardware_id, event_code=0,
                          event_code_description=d, value=row.value, level=0)
         try:
             with db.begin_nested():
@@ -148,17 +157,17 @@ def proc_parameters(sensor_id):
         if row.additional == "NDIS.sys":
             d += u"값을 기록한 드라이버는 NDIS.sys 입니다. "
             d += u"DDOS 공격을 당하고 있을 가능성이 있습니다."
-            w = Warnings(hardware_id=ssid.harware_id, event_code=110,
+            w = Warnings(hardware_id=ssid.hardware_id, event_code=110,
                          event_code_description=d, value=row.value, level=1)
         elif row.additional == "USBPORT.sys":
             d += u"값을 기록한 드라이버는 USBPORT.sys 입니다. "
             d += u"USB 로 연결된 장치중 하나 이상이 올바른 드라이버가 "
             d += u"없거나 파손되었을 가능성이 있습니다."
-            w = Warnings(hardware_id=ssid.harware_id, event_code=111,
+            w = Warnings(hardware_id=ssid.hardware_id, event_code=111,
                          event_code_description=d, value=row.value, level=1)
         else:
             d += u"값을 기록한 드라이버는 %s 입니다. " % (row.additional,)
-            w = Warnings(hardware_id=ssid.harware_id, event_code=100,
+            w = Warnings(hardware_id=ssid.hardware_id, event_code=100,
                          event_code_description=d, value=row.value, level=1)
         try:
             with db.begin_nested():
@@ -199,11 +208,11 @@ def proc_values(sensor_id):
             filter(GenericSmart.rss_id >= rssid.id).first()
         if avg_min[0] > 75:
             d += u"CPU 최저 온도가 %d 를 넘습니다. 쿨러를 체크하세요." % (int(avg_min[0]))
-            w = Warnings(hardware_id=ssid.harware_id, event_code=500,
+            w = Warnings(hardware_id=ssid.hardware_id, event_code=500,
                          event_code_description=d, value=(int(avg_min[0])), level=1)
         elif avg_min[0] > 65:
             d += u"CPU 최저 온도가 %d 를 넘습니다. 쿨러를 체크하세요." % (int(avg_min[0]))
-            w = Warnings(hardware_id=ssid.harware_id, event_code=501,
+            w = Warnings(hardware_id=ssid.hardware_id, event_code=501,
                          event_code_description=d, value=(int(avg_min[0])), level=0)
         if not (w == None):
             try:
@@ -217,11 +226,11 @@ def proc_values(sensor_id):
             filter(GenericSmart.rss_id >= rssid.id).first()
         if avg_max[0] > 90:
             d += u"CPU 최고 온도가 %d 를 넘습니다. 쿨러를 체크하세요." % (int(avg_min[0]))
-            w = Warnings(hardware_id=ssid.harware_id, event_code=502,
+            w = Warnings(hardware_id=ssid.hardware_id, event_code=502,
                          event_code_description=d, value=(int(avg_min[0])), level=2)
         elif avg_max[0] > 80:
             d += u"CPU 최고 온도가 %d 를 넘습니다. 쿨러를 체크하세요." % (int(avg_min[0]))
-            w = Warnings(hardware_id=ssid.harware_id, event_code=503,
+            w = Warnings(hardware_id=ssid.hardware_id, event_code=503,
                          event_code_description=d, value=(int(avg_min[0])), level=1)
         if not (w == None):
             try:
@@ -239,11 +248,11 @@ def proc_values(sensor_id):
             filter(GenericSmart.rss_id >= rssid.id).first()
         if avg_min[0] > 80:
             d += u"GPU 최저 온도가 %d 를 넘습니다. 쿨러를 체크하세요." % (int(avg_min[0]))
-            w = Warnings(hardware_id=ssid.harware_id, event_code=504,
+            w = Warnings(hardware_id=ssid.hardware_id, event_code=504,
                          event_code_description=d, value=(int(avg_min[0])), level=1)
         elif avg_min[0] > 70:
             d += u"GPU 최저 온도가 %d 를 넘습니다. 쿨러를 체크하세요." % (int(avg_min[0]))
-            w = Warnings(hardware_id=ssid.harware_id, event_code=505,
+            w = Warnings(hardware_id=ssid.hardware_id, event_code=505,
                          event_code_description=d, value=(int(avg_min[0])), level=0)
         if not (w == None):
             try:
@@ -257,11 +266,11 @@ def proc_values(sensor_id):
             filter(GenericSmart.rss_id >= rssid.id).first()
         if avg_max[0] > 95:
             d += u"GPU 최고 온도가 %d 를 넘습니다. 쿨러를 체크하세요." % (int(avg_min[0]))
-            w = Warnings(hardware_id=ssid.harware_id, event_code=506,
+            w = Warnings(hardware_id=ssid.hardware_id, event_code=506,
                          event_code_description=d, value=(int(avg_min[0])), level=2)
         elif avg_max[0] > 85:
             d += u"GPU 최고 온도가 %d 를 넘습니다. 쿨러를 체크하세요." % (int(avg_min[0]))
-            w = Warnings(hardware_id=ssid.harware_id, event_code=507,
+            w = Warnings(hardware_id=ssid.hardware_id, event_code=507,
                          event_code_description=d, value=(int(avg_min[0])), level=1)
         if not (w == None):
             try:
@@ -312,7 +321,7 @@ def proc_smart(sensor_id):
                     comment = u"Reallocated Sector 수의 증가는 하드디스크 이상의 전조일 수 있습니다."
                     d += u"S.M.A.R.T Code : %d, Description : %s, Value : %d, Comment : %s" % \
                          (code, desc, max, comment)
-                    w = Warnings(hardware_id=ssid.harware_id, event_code=200,
+                    w = Warnings(hardware_id=ssid.hardware_id, event_code=200,
                                  event_code_description=d, value=max, level=0)
             # 2. 수치 5 이상에서 증가(Warning)
             elif max >= 5:
@@ -320,7 +329,7 @@ def proc_smart(sensor_id):
                     comment = u"Reallocated Sector 수의 증가는 하드디스크 이상의 전조일 수 있습니다."
                     d += u"S.M.A.R.T Code : %d, Description : %s, Value : %d, Comment : %s" % \
                          (code, desc, max, comment)
-                    w = Warnings(hardware_id=ssid.harware_id, event_code=201,
+                    w = Warnings(hardware_id=ssid.hardware_id, event_code=201,
                                  event_code_description=d, value=max, level=1)
             # 3. 수치 7 이상에서 증가(Alert)
             elif max >= 7:
@@ -328,62 +337,62 @@ def proc_smart(sensor_id):
                     comment = u"Reallocated Sector 수가 임계점을 넘었습니다. 데이터를 백업하십시오."
                     d += u"S.M.A.R.T Code : %d, Description : %s, Value : %d, Comment : %s" % \
                          (code, desc, max, comment)
-                    w = Warnings(hardware_id=ssid.harware_id, event_code=202,
+                    w = Warnings(hardware_id=ssid.hardware_id, event_code=202,
                                  event_code_description=d, value=max, level=2)
         elif code == 9:
             if max > 43800:
                 comment = u"하드디스크 가동시간이 3년이 넘었습니다. 교체를 고려하십시오."
                 d += u"S.M.A.R.T Code : %d, Description : %s, Value : %d, Comment : %s" % \
                      (code, desc, max, comment)
-                w = Warnings(hardware_id=ssid.harware_id, event_code=300,
+                w = Warnings(hardware_id=ssid.hardware_id, event_code=300,
                              event_code_description=d, value=max, level=1)
         elif code == 10:
             if max - min > 0:
                 comment = u"Spin Retry Count 수의 증가는 하드디스크 구동부 문제거나 전원의 불안정을 암시합니다."
                 d += u"S.M.A.R.T Code : %d, Description : %s, Value : %d, Comment : %s" % \
                      (code, desc, max, comment)
-                w = Warnings(hardware_id=ssid.harware_id, event_code=400,
+                w = Warnings(hardware_id=ssid.hardware_id, event_code=400,
                              event_code_description=d, value=max, level=1)
         elif code == 183:
             if max - min > 0:
                 comment = u"SATA Downshift Error 는 SATA 케아블의 불량이나 관련 칩셋의 문제를 의미합니다."
                 d += u"S.M.A.R.T Code : %d, Description : %s, Value : %d, Comment : %s" % \
                      (code, desc, max, comment)
-                w = Warnings(hardware_id=ssid.harware_id, event_code=401,
+                w = Warnings(hardware_id=ssid.hardware_id, event_code=401,
                              event_code_description=d, value=max, level=2)
         elif code == 187:
             if max - min > 0:
                 comment = u"Reported Uncorrectable Error 수의 증가는 심각한 수준의 하드디스크 플래터 손상이나 기판의 문제를 의미합니다."
                 d += u"S.M.A.R.T Code : %d, Description : %s, Value : %d, Comment : %s" % \
                      (code, desc, max, comment)
-                w = Warnings(hardware_id=ssid.harware_id, event_code=203,
+                w = Warnings(hardware_id=ssid.hardware_id, event_code=203,
                              event_code_description=d, value=max, level=2)
         elif code == 188:
             if max - min > 0:
                 comment = u"Command Timeout 는 SATA 케아블의 불량이나 전원의 불안정을 암시합니다. 데이터 오염이 발생할 수 있습니다."
                 d += u"S.M.A.R.T Code : %d, Description : %s, Value : %d, Comment : %s" % \
                      (code, desc, max, comment)
-                w = Warnings(hardware_id=ssid.harware_id, event_code=402,
+                w = Warnings(hardware_id=ssid.hardware_id, event_code=402,
                              event_code_description=d, value=max, level=2)
         elif code == 191:
             if max - min > 0:
                 comment = u"Mechanical Shock 는 대상 PC 가 불안정한 위치에 있거나 충격을 받는 경우 발생합니다."
                 d += u"S.M.A.R.T Code : %d, Description : %s, Value : %d, Comment : %s" % \
                      (code, desc, max, comment)
-                w = Warnings(hardware_id=ssid.harware_id, event_code=301,
+                w = Warnings(hardware_id=ssid.hardware_id, event_code=301,
                              event_code_description=d, value=max, level=1)
         elif code == 194:
             if max > 55:
                 comment = u"온도가 55도 이상입니다. 하드디스크의 급격한 노화가 진행될 수 있습니다."
                 d += u"S.M.A.R.T Code : %d, Description : %s, Value : %d, Comment : %s" % \
                      (code, desc, max, comment)
-                w = Warnings(hardware_id=ssid.harware_id, event_code=303,
+                w = Warnings(hardware_id=ssid.hardware_id, event_code=303,
                              event_code_description=d, value=max, level=1)
             elif max > 45:
                 comment = u"온도가 45도 이상입니다."
                 d += u"S.M.A.R.T Code : %d, Description : %s, Value : %d, Comment : %s" % \
                      (code, desc, max, comment)
-                w = Warnings(hardware_id=ssid.harware_id, event_code=302,
+                w = Warnings(hardware_id=ssid.hardware_id, event_code=302,
                              event_code_description=d, value=max, level=0)
         # 중간은잠시 생략, 196, 197, 198, 199, 201, 230
         elif code == 231:
@@ -391,13 +400,13 @@ def proc_smart(sensor_id):
                 comment = u"온도가 55도 이상입니다. 하드디스크의 급격한 노화가 진행될 수 있습니다."
                 d += u"S.M.A.R.T Code : %d, Description : %s, Value : %d, Comment : %s" % \
                      (code, desc, max, comment)
-                w = Warnings(hardware_id=ssid.harware_id, event_code=303,
+                w = Warnings(hardware_id=ssid.hardware_id, event_code=303,
                              event_code_description=d, value=max, level=1)
             elif max > 45:
                 comment = u"온도가 45도 이상입니다."
                 d += u"S.M.A.R.T Code : %d, Description : %s, Value : %d, Comment : %s" % \
                      (code, desc, max, comment)
-                w = Warnings(hardware_id=ssid.harware_id, event_code=302,
+                w = Warnings(hardware_id=ssid.hardware_id, event_code=302,
                              event_code_description=d, value=max, level=0)
         if not (w == None):
             try:
