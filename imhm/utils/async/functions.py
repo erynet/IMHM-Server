@@ -56,16 +56,16 @@ def interrupt_timer():
     targets = db.query(Sensors).filter(Sensors.processed_at < dt).all()
     for t in targets:
         if t.type in [0, 1, 2, 3]:
-            #proc_values.apply_async(args=[t.id,])
-            pass
+            proc_values.apply_async(args=[t.id,])
+            #pass
         elif t.type in [4, 5, 6]:
-            #proc_regression.apply_async(args=[t.id,])
-            pass
+            proc_regression.apply_async(args=[t.id,])
+            #pass
         elif t.type in [7, 8]:
             proc_parameters.apply_async(args=[t.id,])
         elif t.type == 9:
-            #proc_smart.apply_async(args=[t.id,])
-            pass
+            proc_smart.apply_async(args=[t.id,])
+            #pass
         else:
             pass
     #이 밑으로는 리그레션 프로세서를 넣어야 하는데 ..
@@ -118,7 +118,9 @@ def proc_parameters(sensor_id):
     #    dpc_max = dpc
     #    break
     dpc_max = dpc_maxs[0]
-    print dpc_maxs;
+    if not dpc_max:
+        return
+    #print dpc_maxs;
 
     #row = db.query(GenericParameters).filter_by(value=dpc_max).first()
     row = db.query(GenericParameters). \
